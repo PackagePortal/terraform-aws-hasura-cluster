@@ -300,22 +300,7 @@ locals {
     value = "http://localhost:5000"
   }] : []
 
-  jwt_hook = var.use_jwt_auth ? [{
-    name  = "HASURA_GRAPHQL_JWT_SECRET",
-    value = "{\"type\":\"${var.hasura_jwt_secret_algo}\", \"jwk_url\": \"${var.hasura_jwt_secret_key}\"}"
-    }] : []
-
-  admin_secret = {
-      name  = "HASURA_GRAPHQL_ADMIN_SECRET",
-      value = var.hasura_admin_secret
-  }
-
-  ecs_environment = concat(local.auth_hook, local.jwt_hook, [
-    local.admin_secret,
-    {
-      name  = "HASURA_GRAPHQL_DATABASE_URL",
-      value = "postgres://${var.rds_username}:${var.rds_password}@${aws_db_instance.hasura.endpoint}/${var.rds_db_name}"
-    },
+  ecs_environment = concat(local.auth_hook, [
     {
       name  = "HASURA_GRAPHQL_ENABLE_CONSOLE",
       value = var.hasura_console_enabled
@@ -352,14 +337,25 @@ locals {
         }
       }
 
+    secrets = [
+      {
+        "name"  = "HASURA_GRAPHQL_ADMIN_SECRET",
+        "valueFrom" = aws_secretsmanager_secret.admin_secret.arn
+      }
+    ]
+
     environment = flatten(concat([
-      local.admin_secret,
       {
         name: "HASURA_ENDPOINT"
         value: "http://localhost:8080/v1/graphql"
       }
     ], var.custom_auth_webhook_env))
   }
+
+  other_secrets = [for index, secret in var.secrets: {
+    "name" = secret.name,
+    "valueFrom" = aws_secretsmanager_secret.other_secrets[index].arn
+  }]
 
   ecs_container_definitions = concat([
     {
@@ -384,6 +380,23 @@ locals {
       }
 
       environment = flatten([local.ecs_environment, var.environment])
+      secrets = concat([
+        {
+          "name"  = "HASURA_GRAPHQL_DATABASE_URL",
+          "valueFrom" = aws_secretsmanager_secret.db_url.arn
+        },
+        {
+          "name"  = "HASURA_GRAPHQL_ADMIN_SECRET",
+          "valueFrom" = aws_secretsmanager_secret.admin_secret.arn
+        },
+      ],
+      var.use_jwt_auth ? [
+        {
+          "name"  = "HASURA_GRAPHQL_JWT_SECRET",
+          "valueFrom" = aws_secretsmanager_secret.jwt_secret[0].arn
+        }
+      ] : [],
+      local.other_secrets)
     }
   ], var.use_custom_auth_webhook ? [local.auth_image] : [])
 
@@ -461,6 +474,41 @@ resource "aws_s3_bucket" "hasura" {
   tags = var.tags
 }
 
+resource "aws_s3_bucket_public_access_block" "hasura" {
+  bucket = aws_s3_bucket.hasura.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_policy" "hasura_https_only" {
+  bucket = aws_s3_bucket.hasura.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Id      = "${aws_s3_bucket.hasura.id}-https-only"
+    Statement = [
+      {
+        Sid       = "HTTPSOnly"
+        Effect    = "Deny"
+        Principal = "*"
+        Action    = "s3:*"
+        Resource = [
+          aws_s3_bucket.hasura.arn,
+          "${aws_s3_bucket.hasura.arn}/*",
+        ]
+        Condition = {
+          Bool = {
+            "aws:SecureTransport" = "false"
+          }
+        }
+      },
+    ]
+  })
+}
+
 # -----------------------------------------------------------------------------
 # Add IAM policy to allow the ALB to log to it
 # -----------------------------------------------------------------------------
@@ -494,6 +542,8 @@ resource "aws_alb" "hasura" {
   subnets         = aws_subnet.hasura_public.*.id
   security_groups = [aws_security_group.hasura_alb.id]
   internal        = true
+
+  drop_invalid_header_fields = true
 
   access_logs {
     bucket  = aws_s3_bucket.hasura.id
