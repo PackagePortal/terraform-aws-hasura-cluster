@@ -25,3 +25,7 @@ output "alb_arn" {
 output "alb_dns" {
   value = aws_alb.hasura.dns_name
 }
+
+output "iam_role" {
+  value = aws_iam_role.hasura_role
+}
