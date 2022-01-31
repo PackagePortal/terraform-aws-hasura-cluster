@@ -483,32 +483,6 @@ resource "aws_s3_bucket_public_access_block" "hasura" {
   restrict_public_buckets = true
 }
 
-resource "aws_s3_bucket_policy" "hasura_https_only" {
-  bucket = aws_s3_bucket.hasura.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Id      = "${aws_s3_bucket.hasura.id}-https-only"
-    Statement = [
-      {
-        Sid       = "HTTPSOnly"
-        Effect    = "Deny"
-        Principal = "*"
-        Action    = "s3:*"
-        Resource = [
-          aws_s3_bucket.hasura.arn,
-          "${aws_s3_bucket.hasura.arn}/*",
-        ]
-        Condition = {
-          Bool = {
-            "aws:SecureTransport" = "false"
-          }
-        }
-      },
-    ]
-  })
-}
-
 # -----------------------------------------------------------------------------
 # Add IAM policy to allow the ALB to log to it
 # -----------------------------------------------------------------------------
@@ -524,6 +498,25 @@ data "aws_iam_policy_document" "hasura" {
     principals {
       type        = "AWS"
       identifiers = [data.aws_elb_service_account.main.arn]
+    }
+  }
+
+  statement {
+    effect = "Deny"
+    resources = [
+      aws_s3_bucket.hasura.arn,
+      "${aws_s3_bucket.hasura.arn}/*",
+    ]
+    actions = ["s3:*"]
+    not_principals {
+      type        = "AWS"
+      identifiers = [data.aws_elb_service_account.main.arn]
+    }
+
+    condition {
+      test = "Bool"
+      variable = "aws:SecureTransport"
+      values = [ "false" ]
     }
   }
 }
