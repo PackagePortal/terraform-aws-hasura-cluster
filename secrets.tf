@@ -42,6 +42,21 @@ resource "aws_secretsmanager_secret_version" "other_secrets" {
   ]
 }
 
+resource "aws_secretsmanager_secret" "custom_auth_webhook_secrets" {
+  count = length(var.custom_auth_webhook_secrets)
+  name = "${var.env_name}-${var.app_name}-${var.custom_auth_webhook_secrets[count.index].name}"
+}
+
+resource "aws_secretsmanager_secret_version" "custom_auth_webhook_secrets" {
+  count = length(var.custom_auth_webhook_secrets)
+  secret_id     = aws_secretsmanager_secret.custom_auth_webhook_secrets[count.index].id
+  secret_string = var.custom_auth_webhook_secrets[count.index].value
+
+  depends_on = [
+    aws_secretsmanager_secret.custom_auth_webhook_secrets
+  ]
+}
+
 data "aws_iam_policy_document" "hasura_secret_read" {
   statement {
     effect = "Allow"
@@ -55,7 +70,8 @@ data "aws_iam_policy_document" "hasura_secret_read" {
       aws_secretsmanager_secret.admin_secret.arn,
     ],
     var.use_jwt_auth ? [aws_secretsmanager_secret.jwt_secret[0].arn] : [],
-    aws_secretsmanager_secret.other_secrets.*.arn)
+    aws_secretsmanager_secret.other_secrets.*.arn,
+    aws_secretsmanager_secret.custom_auth_webhook_secrets.*.arn)
   }
 }
 
