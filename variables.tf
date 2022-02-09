@@ -180,6 +180,12 @@ variable "custom_auth_webhook_env" {
   default     = []
 }
 
+variable "custom_auth_webhook_secrets" {
+  type        = list(map(string))
+  description = "Extra secrets for Auth webhook"
+  default     = []
+}
+
 variable "internet_route_table_id" {
   type        = string
   description = "Id of route table to get internet access for private subnets"
