@@ -205,3 +205,8 @@ variable "private_subnet_internet_route_table_id_hasura_vpc" {
     prod = "rtb-05fc07704dddbe854"
   }
 }
+
+variable "pg_version" {
+  type = string
+  default = "10.18"
+}
