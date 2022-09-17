@@ -150,8 +150,20 @@ variable "cidr_bit_offset" {
 
 variable "internet_route_table_id" {
   type        = string
-  description = "Id of route table to get internet access for private subnets"
+  description = "Route table for public subnets"
   default     = ""
+}
+
+variable "private_subnet_route_table_id" {
+  type        = string
+  description = "Route table for the private subnet"
+  default     = ""
+}
+
+variable "map_public_ip_on_public_subnet" {
+  type        = boolean
+  description = "Controls map_public_ip_on_launch for the public subnet, set to false for internal serving."
+  default     = true
 }
 
 variable "alb_port" {

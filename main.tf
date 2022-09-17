@@ -10,6 +10,10 @@ local {
   https = var.alb_port == 443
 }
 
+####################
+# Network resources
+####################
+
 # Create var.az_count private subnets for RDS, each in a different AZ
 resource "aws_subnet" "hasura_private" {
   count             = var.az_count
@@ -22,10 +26,10 @@ resource "aws_subnet" "hasura_private" {
   }
 }
 
-resource "aws_route_table_association" "associate_routetable_to_private_subnet" {
-  count = length(var.internet_route_table_id) > 0 ? var.az_count : 0
+resource "aws_route_table_association" "private_subnet_route_table_id" {
+  count = length(var.private_subnet_route_table_id) > 0 ? var.az_count : 0
   subnet_id      = aws_subnet.hasura_private[count.index].id
-  route_table_id = var.internet_route_table_id
+  route_table_id = var.private_subnet_route_table_id
 
   depends_on = [
     aws_subnet.hasura_private
@@ -38,14 +42,14 @@ resource "aws_subnet" "hasura_public" {
   cidr_block              = cidrsubnet(data.aws_vpc.hasura.cidr_block, 8, var.az_count + count.index + var.cidr_bit_offset)
   availability_zone       = data.aws_availability_zones.available.names[count.index]
   vpc_id                  = data.aws_vpc.hasura.id
-  map_public_ip_on_launch = false
+  map_public_ip_on_launch = var.map_public_ip_on_public_subnet
 
   tags = merge({
     Name = "${var.env_name} ${var.app_name} hasura #${var.az_count + count.index} (ALB)"
   }, var.tags)
 }
 
-resource "aws_route_table_association" "lb_subnet_to_private_route_table" {
+resource "aws_route_table_association" "lb_subnet_to_route_table" {
   count = length(var.internet_route_table_id) > 0 ? var.az_count : 0
   subnet_id      = aws_subnet.hasura_public[count.index].id
   route_table_id = var.internet_route_table_id
@@ -54,10 +58,6 @@ resource "aws_route_table_association" "lb_subnet_to_private_route_table" {
     aws_subnet.hasura_public
   ]
 }
-
-# -----------------------------------------------------------------------------
-# Create security groups
-# -----------------------------------------------------------------------------
 
 # Internet to ALB
 resource "aws_security_group" "hasura_alb" {
