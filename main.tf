@@ -65,7 +65,6 @@ resource "aws_security_group" "hasura_alb" {
   description = "Allows access to ALB on exposed port"
   vpc_id      = data.aws_vpc.hasura.id
 
-  # Needs to be public because source ip is given by api gateway
   ingress {
     protocol    = "tcp"
     from_port   = var.alb_port
