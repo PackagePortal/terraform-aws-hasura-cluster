@@ -1,62 +1,67 @@
-# -----------------------------------------------------------------------------
-# ENVIRONMENT VARIABLES
-# Define these secrets as environment variables
-# -----------------------------------------------------------------------------
-
-# AWS_ACCESS_KEY_ID
-# AWS_SECRET_ACCESS_KEY
-
-# -----------------------------------------------------------------------------
-# PARAMETERS
-# -----------------------------------------------------------------------------
-
+#################
+# General 
+#################
 variable "region" {
   type        = string
-  description = "Region to deploy"
-  default     = "ap-northeast-1" # Asia Pacific Tokyo
+  description = "AWS region to deploy in"
+  default     = "us-east-1"
 }
 
 variable "app_name" {
   type        = string
-  description = "Name of application"
+  description = "Used to name the hasura instance"
 }
 
+variable "env_name" {
+  type        = string
+  description = "Enviroment prefix on resource names"
+}
+
+variable "tags" {
+  type        = map(string)
+  description = "AWS Resource tags"
+  default     = {}
+}
+
+###########################
+# Hasura instance variables
+###########################
 variable "use_jwt_auth" {
   type        = bool
   description = "Whether to set up JWT auth webhooks on the Hasura instance"
   default     = false
 }
 
-variable "vpc_id" {
-  description = "VPC Id"
-  type        = string
-}
-
 variable "capacity_provider" {
   description = "Capacity provider for tasks"
   type        = string
-  default     = "FARGATE"
+  default     = "FARGATE_SPOT"
 }
 
 variable "domain" {
+  type        = string
   description = "Log domain name"
-  default = "hasura-logs"
+  default     = "hasura-logs"
 }
 
 variable "hasura_subdomain" {
+  type        = string
   description = "The Subdomain for your hasura graphql service."
-  default = ""
+  default     = ""
 }
 
 variable "app_subdomain" {
+  type        = string
   description = "The Subdomain for your application that will make CORS requests to the hasura_subdomain"
-  default = ""
+  default     = ""
 }
 variable "hasura_version_tag" {
+  type        = string
   description = "The hasura graphql engine version tag"
 }
 
 variable "hasura_admin_secret" {
+  type        = string
   description = "The admin secret to secure hasura; for admin access"
 }
 
@@ -74,22 +79,52 @@ variable "hasura_jwt_secret_algo" {
 
 variable "hasura_console_enabled" {
   description = "Should the Hasura Console web interface be enabled?"
+  type        = string
+  default     = "false"
 }
 
-variable "rds_username" {
-  description = "The username for RDS"
+variable "hasura_environment" {
+  description = "Environment variables for ECS task: [ { name = \"foo\", value = \"bar\" }, ..]"
+  type        = list(object({
+    name  = string
+    value = string
+  }))
+  default     = []
 }
 
-variable "rds_password" {
-  description = "The password for RDS"
+variable "hasura_secrets" {
+  description = "Secrets variables for ECS task: [ { name = \"foo\", value = \"bar\" }, ..]"
+  default     = []
+  type        = list(object({
+    name  = string
+    value = string
+  }))
 }
 
-variable "rds_db_name" {
-  description = "The DB name in the RDS instance"
+variable "hasura_cors_domain" {
+  description = "CORs domains to allow to access Hasura. Defaults to all domains (not recommended for publicly exposed APIs)"
+  type        = string
+  default     = "*"
 }
 
-variable "rds_instance" {
-  description = "The size of RDS instance, eg db.t2.micro"
+variable "cpu_size" {
+  type        = string
+  default     = "512"
+  description = "CPU Units for ECS Cluster"
+}
+
+variable "memory_size" {
+  type        = string
+  default     = "1024"
+  description = "Memory Units for ECS Cluster"
+}
+
+###########################
+# Network related variables
+###########################
+variable "vpc_id" {
+  description = "VPC that the hasura instance will be created in."
+  type        = string
 }
 
 variable "az_count" {
@@ -102,34 +137,72 @@ variable "multi_az" {
   default     = true
 }
 
-variable "vpc_enable_dns_hostnames" {
-  description = "A boolean flag to enable/disable DNS hostnames in the VPC. Defaults false."
-  default     = false
-}
-
-variable "environment" {
-  description = "Environment variables for ECS task: [ { name = \"foo\", value = \"bar\" }, ..]"
-  default     = []
-}
-
-variable "secrets" {
-  description = "Secrets variables for ECS task: [ { name = \"foo\", value = \"bar\" }, ..]"
-  default     = []
-}
-
 variable "additional_db_security_groups" {
   description = "List of Security Group IDs to have access to the RDS instance"
   default     = []
 }
 
-variable "create_iam_service_linked_role" {
-  description = "Whether to create IAM service linked role for AWS ElasticSearch service. Can be only one per AWS account."
-  default     = true
+variable "cidr_bit_offset" {
+  type        = number
+  default     = 0
+  description = "CIDR offset for calculating subnets"
 }
 
-variable "env_name" {
+variable "internet_route_table_id" {
   type        = string
-  description = "Adds environment prefix to resource names"
+  description = "Id of route table to get internet access for private subnets"
+  default     = ""
+}
+
+variable "alb_port" {
+  type        = number
+  description = "Port ALB will listen on. Defaults to 443 for SSL"
+  default     = 443
+}
+
+variable "acm_certificate_arn" {
+  type        = string
+  description = "Certificate ARN for use with ALB if listening port is 443"
+  default     = ""
+}
+
+##########################
+# RDS variables
+##########################
+variable "rds_username" {
+  description = "The username for RDS"
+  type        = string
+}
+
+variable "rds_password" {
+  description = "The password for RDS"
+  type        = string
+  default     = "db.t2.small"
+}
+
+variable "pg_version" {
+  type           = string
+  desdescription = "Postgres DB version"
+  default        = "14.5"
+}
+
+variable "parameter_group_name" {
+  type        = string
+  description = "AWS RDS parameter group - change this for a custom group or non-default pg version"
+  default     = "default.postgres14"
+}
+
+variable "rds_db_name" {
+  description = "The DB name in the RDS instance"
+}
+
+variable "rds_instance" {
+  description = "The size of RDS instance, eg db.t2.micro"
+}
+
+variable "create_iam_service_linked_role" {
+  description = "Whether to create IAM service linked role for AWS. One needed per AWS account."
+  default     = true
 }
 
 variable "read_replica_enabled" {
@@ -144,69 +217,65 @@ variable "read_replica_rds_instance" {
   description = "What size read replica to create"
 }
 
-variable "cpu_size" {
+########################################################
+# Variables controlling the actions endpoints container
+########################################################
+variable "use_actions_endpoint" {
+  type        = bool
+  description = "Whether or not to create the custom actions endpoint container"
+  default     = false
+}
+
+variable "actions_endpoints_cpu_limit" {
   type        = string
   default     = "256"
-  description = "CPU Units for Hasura ECS Cluster"
+  description = "CPU Units limit for actions endpoints"
 }
 
-variable "memory_size" {
+variable "actions_endpoints_memory_limit" {
   type        = string
   default     = "512"
-  description = "Memory Units for Hasura ECS Cluster"
+  description = "Memory Units for actions endpoints"
 }
 
-variable "cidr_bit_offset" {
+variable "actions_endpoints_port" {
   type        = number
-  default     = 0
-  description = "CIDR offset for calculating subnets"
+  default     = 5000
+  description = "Port actions endpoints are served on"
 }
 
-variable "use_custom_auth_webhook" {
-  type = bool
-  description = "Will a custom auth webhook be used"
-  default = false
-}
-
-variable "custom_auth_webhook_image" {
-  type = string
-  description = "Docker image name for auth webhook"
-  default = ""
-}
-
-variable "custom_auth_webhook_env" {
-  type        = list(map(string))
-  description = "Extra env vars for Auth webhook"
-  default     = []
-}
-
-variable "custom_auth_webhook_secrets" {
-  type        = list(map(string))
-  description = "Extra secrets for Auth webhook"
-  default     = []
-}
-
-variable "internet_route_table_id" {
+variable "actions_endpoints_image" {
   type        = string
-  description = "Id of route table to get internet access for private subnets"
+  description = "Docker image name for actions endpoints"
   default     = ""
 }
 
-variable "tags" {
-  type        = map(string)
-  description = "AWS Resource tags"
-  default = {}
+variable "actions_endpoints_env" {
+  description = "Enviroment vars for actions endpoints container"
+  default     = []
+  type        = list(object({
+    name  = string
+    value = string
+  }))
 }
 
-variable "private_subnet_internet_route_table_id_hasura_vpc" {
-  type = map(string)
-  default = {
-    dev  = "rtb-05b99407c66ee9d41"
-    prod = "rtb-05fc07704dddbe854"
-  }
+variable "actions_endpoints_secrets" {
+  description = "Values to be stored as secrets for actions endpoints container"
+  default     = []
+  type        = list(object({
+    name  = string
+    value = string
+  }))
 }
 
-variable "pg_version" {
-  type = string
-  default = "10.18"
+variable "use_custom_auth_webhook" {
+  type        = bool
+  description = "Whether or not to use a custom authentication endpoint"
+  default     = false
+}
+
+variable "custom_auth_url" {
+  type        = string
+  description = "Custom authentication url, defaults to auth path of actions server"
+  default     = "http://localhost:5000/auth"
 }

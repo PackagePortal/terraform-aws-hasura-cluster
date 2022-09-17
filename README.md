@@ -4,12 +4,15 @@ Creates the network, RDS, and ECS Fargate resources for deploying an internal fa
 
 This does not create a public endpoint, link to an API gateway for that.
 
+Based on the work in this repo: https://github.com/Rayraegah/terraform-aws-hasura
+
 Example usage:
 ```terraform
 module "example" {
   source                 = "github.com/PackagePortal/terraform-aws-hasura-cluster?ref=v0.0.1"
   
   app_name               = "my-hasura-app"
+  env_name               = local.env
   region                 = local.region
   hasura_version_tag     = "v2.0.9"
   hasura_admin_secret    = var.admin_secret
@@ -25,7 +28,7 @@ module "example" {
   memory_size            = 512
 
   use_custom_auth_webhook   = true # Set to false if using default webhook
-  custom_auth_webhook_image = var.flask_app_image_name  # Custom auth webhook that can be used
+  actions_endpoints_image = var.flask_app_image_name  # Custom auth webhook that can be used
 
   environment            = [
     {
@@ -46,14 +49,13 @@ module "example" {
     }
   ]
 
-  custom_auth_webhook_env = [
+  actions_endpoints_env = [
     {
       name: "SCRIPT_PATH"
       value: "auth_server:app"
     }
   ]
 
-  env_name                       = local.env
   additional_db_security_groups  = [] # Add additional security groups that should be able to directly query DB (e.g. metabase)
   create_iam_service_linked_role = false # If you have not deployed an instance in an account set to true
   vpc_id                         = var.vpc_id
