@@ -33,7 +33,7 @@ resource "aws_db_instance" "hasura" {
   deletion_protection         = true
 
   tags = merge({
-    Backup: "Daily30"
+    Backup : "Daily30"
   }, var.tags)
 }
 

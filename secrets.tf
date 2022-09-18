@@ -18,22 +18,22 @@ resource "aws_secretsmanager_secret_version" "admin_secret" {
 
 resource "aws_secretsmanager_secret" "jwt_secret" {
   count = var.use_jwt_auth ? 1 : 0
-  name = "${var.env_name}-${var.app_name}-jwt-secret"
+  name  = "${var.env_name}-${var.app_name}-jwt-secret"
 }
 
 resource "aws_secretsmanager_secret_version" "jwt_secret" {
-  count = var.use_jwt_auth ? 1 : 0
+  count         = var.use_jwt_auth ? 1 : 0
   secret_id     = aws_secretsmanager_secret.jwt_secret[0].id
   secret_string = "{\"type\":\"${var.hasura_jwt_secret_algo}\", \"jwk_url\": \"${var.hasura_jwt_secret_key}\"}"
 }
 
 resource "aws_secretsmanager_secret" "other_secrets" {
   count = length(var.hasura_secrets)
-  name = "${var.env_name}-${var.app_name}-${var.hasura_secrets[count.index].name}"
+  name  = "${var.env_name}-${var.app_name}-${var.hasura_secrets[count.index].name}"
 }
 
 resource "aws_secretsmanager_secret_version" "other_secrets" {
-  count = length(var.hasura_secrets)
+  count         = length(var.hasura_secrets)
   secret_id     = aws_secretsmanager_secret.other_secrets[count.index].id
   secret_string = var.hasura_secrets[count.index].value
 
@@ -44,11 +44,11 @@ resource "aws_secretsmanager_secret_version" "other_secrets" {
 
 resource "aws_secretsmanager_secret" "actions_endpoints_secrets" {
   count = length(var.actions_endpoints_secrets)
-  name = "${var.env_name}-${var.app_name}-${var.actions_endpoints_secrets[count.index].name}"
+  name  = "${var.env_name}-${var.app_name}-${var.actions_endpoints_secrets[count.index].name}"
 }
 
 resource "aws_secretsmanager_secret_version" "actions_endpoints_secrets" {
-  count = length(var.actions_endpoints_secrets)
+  count         = length(var.actions_endpoints_secrets)
   secret_id     = aws_secretsmanager_secret.actions_endpoints_secrets[count.index].id
   secret_string = var.actions_endpoints_secrets[count.index].value
 

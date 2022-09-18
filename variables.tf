@@ -80,17 +80,17 @@ variable "hasura_console_enabled" {
 
 variable "hasura_environment" {
   description = "Environment variables for ECS task: [ { name = \"foo\", value = \"bar\" }, ..]"
-  type        = list(object({
+  type = list(object({
     name  = string
     value = string
   }))
-  default     = []
+  default = []
 }
 
 variable "hasura_secrets" {
   description = "Secrets variables for ECS task: [ { name = \"foo\", value = \"bar\" }, ..]"
   default     = []
-  type        = list(object({
+  type = list(object({
     name  = string
     value = string
   }))
@@ -189,7 +189,7 @@ variable "rds_password" {
 
 variable "pg_version" {
   type           = string
-  desdescription = "Postgres DB version"
+  description = "Postgres DB version"
   default        = "14.5"
 }
 
@@ -260,7 +260,7 @@ variable "actions_endpoints_image" {
 variable "actions_endpoints_env" {
   description = "Enviroment vars for actions endpoints container"
   default     = []
-  type        = list(object({
+  type = list(object({
     name  = string
     value = string
   }))
@@ -269,7 +269,7 @@ variable "actions_endpoints_env" {
 variable "actions_endpoints_secrets" {
   description = "Values to be stored as secrets for actions endpoints container"
   default     = []
-  type        = list(object({
+  type = list(object({
     name  = string
     value = string
   }))

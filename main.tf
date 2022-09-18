@@ -6,7 +6,7 @@ data "aws_vpc" "hasura" {
   id = var.vpc_id
 }
 
-local {
+locals {
   https = var.alb_port == 443
 }
 
@@ -27,7 +27,7 @@ resource "aws_subnet" "hasura_private" {
 }
 
 resource "aws_route_table_association" "private_subnet_route_table_id" {
-  count = length(var.private_subnet_route_table_id) > 0 ? var.az_count : 0
+  count          = length(var.private_subnet_route_table_id) > 0 ? var.az_count : 0
   subnet_id      = aws_subnet.hasura_private[count.index].id
   route_table_id = var.private_subnet_route_table_id
 
@@ -50,7 +50,7 @@ resource "aws_subnet" "hasura_public" {
 }
 
 resource "aws_route_table_association" "lb_subnet_to_route_table" {
-  count = length(var.internet_route_table_id) > 0 ? var.az_count : 0
+  count          = length(var.internet_route_table_id) > 0 ? var.az_count : 0
   subnet_id      = aws_subnet.hasura_public[count.index].id
   route_table_id = var.internet_route_table_id
 
@@ -155,7 +155,7 @@ resource "aws_ecs_task_definition" "hasura" {
   task_role_arn            = aws_iam_role.hasura_role.arn
 
   container_definitions = jsonencode(local.ecs_container_definitions)
-  tags = var.tags
+  tags                  = var.tags
 }
 
 resource "aws_ecs_service" "hasura" {
@@ -170,8 +170,8 @@ resource "aws_ecs_service" "hasura" {
   desired_count   = var.multi_az ? "2" : "1"
 
   network_configuration {
-    security_groups  = [aws_security_group.hasura_ecs.id]
-    subnets          = aws_subnet.hasura_private.*.id
+    security_groups = [aws_security_group.hasura_ecs.id]
+    subnets         = aws_subnet.hasura_private.*.id
   }
 
   capacity_provider_strategy {
@@ -205,7 +205,7 @@ resource "aws_alb" "hasura" {
   }
 
   depends_on = [aws_s3_bucket.hasura]
-  tags = var.tags
+  tags       = var.tags
 }
 
 resource "aws_alb_target_group" "hasura" {

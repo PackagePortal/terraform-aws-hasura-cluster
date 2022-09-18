@@ -1,7 +1,7 @@
 locals {
   # auth_hook and jwt_hook are optional settings for auth hooks
   auth_hook = var.use_custom_auth_webhook ? [{
-    name = "HASURA_GRAPHQL_AUTH_HOOK"
+    name  = "HASURA_GRAPHQL_AUTH_HOOK"
     value = var.custom_auth_url
   }] : []
 
@@ -34,36 +34,36 @@ locals {
     ]
 
     logConfiguration = {
-        logDriver = "awslogs",
-        options = {
-          awslogs-group         = aws_cloudwatch_log_group.hasura.name,
-          awslogs-region        = var.region,
-          awslogs-stream-prefix = "ecs"
-        }
+      logDriver = "awslogs",
+      options = {
+        awslogs-group         = aws_cloudwatch_log_group.hasura.name,
+        awslogs-region        = var.region,
+        awslogs-stream-prefix = "ecs"
       }
+    }
 
     secrets = concat([
       {
-        "name"  = "HASURA_GRAPHQL_ADMIN_SECRET",
+        "name"      = "HASURA_GRAPHQL_ADMIN_SECRET",
         "valueFrom" = aws_secretsmanager_secret.admin_secret.arn
       }
     ], local.actions_endpoints_secrets)
 
     environment = flatten(concat([
       {
-        name: "HASURA_ENDPOINT"
-        value: "http://localhost:8080/v1/graphql"
+        name : "HASURA_ENDPOINT"
+        value : "http://localhost:8080/v1/graphql"
       }
     ], var.actions_endpoints_env))
   }
 
-  other_secrets = [for index, secret in var.hasura_secrets: {
-    "name" = secret.name,
+  other_secrets = [for index, secret in var.hasura_secrets : {
+    "name"      = secret.name,
     "valueFrom" = aws_secretsmanager_secret.other_secrets[index].arn
   }]
 
-  actions_endpoints_secrets = [for index, secret in var.actions_endpoints_secrets: {
-    "name" = secret.name,
+  actions_endpoints_secrets = [for index, secret in var.actions_endpoints_secrets : {
+    "name"      = secret.name,
     "valueFrom" = aws_secretsmanager_secret.actions_endpoints_secrets[index].arn
   }]
 
@@ -92,20 +92,20 @@ locals {
       environment = flatten([local.hasura_ecs_env_defaults, var.hasura_environment])
       secrets = concat([
         {
-          "name"  = "HASURA_GRAPHQL_DATABASE_URL",
+          "name"      = "HASURA_GRAPHQL_DATABASE_URL",
           "valueFrom" = aws_secretsmanager_secret.db_url.arn
         },
         {
-          "name"  = "HASURA_GRAPHQL_ADMIN_SECRET",
+          "name"      = "HASURA_GRAPHQL_ADMIN_SECRET",
           "valueFrom" = aws_secretsmanager_secret.admin_secret.arn
         },
-      ],
-      var.use_jwt_auth ? [
-        {
-          "name"  = "HASURA_GRAPHQL_JWT_SECRET",
-          "valueFrom" = aws_secretsmanager_secret.jwt_secret[0].arn
-        }
-      ] : [],
+        ],
+        var.use_jwt_auth ? [
+          {
+            "name"      = "HASURA_GRAPHQL_JWT_SECRET",
+            "valueFrom" = aws_secretsmanager_secret.jwt_secret[0].arn
+          }
+        ] : [],
       local.other_secrets)
     }
   ], var.use_actions_endpoint ? [local.actions_image] : [])

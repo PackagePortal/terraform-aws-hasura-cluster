@@ -4,15 +4,15 @@
 resource "aws_cloudwatch_log_group" "hasura" {
   name              = "/ecs/${var.env_name}-${var.app_name}-hasura"
   retention_in_days = 30
-  tags = var.tags
+  tags              = var.tags
 }
 
 ####################
 # ALB Log Bucket
 ####################
 resource "aws_s3_bucket" "hasura" {
-  bucket = "hasura-${var.app_name}-${var.region}-${var.hasura_subdomain}-${var.logs_domain}"
-  acl = "private"
+  bucket        = "hasura-${var.app_name}-${var.region}-${var.hasura_subdomain}-${var.logs_domain}"
+  acl           = "private"
   force_destroy = "true"
 
   server_side_encryption_configuration {
