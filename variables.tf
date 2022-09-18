@@ -38,23 +38,18 @@ variable "capacity_provider" {
   default     = "FARGATE_SPOT"
 }
 
-variable "domain" {
+variable "logs_domain" {
   type        = string
   description = "Log domain name"
   default     = "hasura-logs"
 }
 
-variable "hasura_subdomain" {
+variable "hasura_image_base" {
   type        = string
-  description = "The Subdomain for your hasura graphql service."
-  default     = ""
+  description = "What Hasura Docker image to use"
+  default     = "hasura/graphql-engine"
 }
 
-variable "app_subdomain" {
-  type        = string
-  description = "The Subdomain for your application that will make CORS requests to the hasura_subdomain"
-  default     = ""
-}
 variable "hasura_version_tag" {
   type        = string
   description = "The hasura graphql engine version tag"
@@ -160,10 +155,10 @@ variable "private_subnet_route_table_id" {
   default     = ""
 }
 
-variable "map_public_ip_on_public_subnet" {
-  type        = boolean
+variable "internal_alb" {
+  type        = bool
   description = "Controls map_public_ip_on_launch for the public subnet, set to false for internal serving."
-  default     = true
+  default     = false
 }
 
 variable "alb_port" {

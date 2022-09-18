@@ -42,7 +42,7 @@ resource "aws_subnet" "hasura_public" {
   cidr_block              = cidrsubnet(data.aws_vpc.hasura.cidr_block, 8, var.az_count + count.index + var.cidr_bit_offset)
   availability_zone       = data.aws_availability_zones.available.names[count.index]
   vpc_id                  = data.aws_vpc.hasura.id
-  map_public_ip_on_launch = var.map_public_ip_on_public_subnet
+  map_public_ip_on_launch = var.internal_alb
 
   tags = merge({
     Name = "${var.env_name} ${var.app_name} hasura #${var.az_count + count.index} (ALB)"
@@ -194,7 +194,7 @@ resource "aws_alb" "hasura" {
   name            = "${var.env_name}-${var.app_name}-hasura-alb"
   subnets         = aws_subnet.hasura_public.*.id
   security_groups = [aws_security_group.hasura_alb.id]
-  internal        = true
+  internal        = var.internal_alb
 
   drop_invalid_header_fields = true
 

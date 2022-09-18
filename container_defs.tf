@@ -69,7 +69,7 @@ locals {
 
   ecs_container_definitions = concat([
     {
-      image       = "hasura/graphql-engine:${var.hasura_version_tag}"
+      image       = "${var.hasura_image_base}:${var.hasura_version_tag}"
       name        = "hasura",
       networkMode = "awsvpc",
 

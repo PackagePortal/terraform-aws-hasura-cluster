@@ -11,14 +11,9 @@ resource "aws_cloudwatch_log_group" "hasura" {
 # ALB Log Bucket
 ####################
 resource "aws_s3_bucket" "hasura" {
-  bucket = "hasura-${var.app_name}-${var.region}-${var.hasura_subdomain}-${var.domain}"
+  bucket = "hasura-${var.app_name}-${var.region}-${var.hasura_subdomain}-${var.logs_domain}"
   acl = "private"
   force_destroy = "true"
-
-  /*logging {
-    target_bucket = "ppi-accesslogs-${var.env_name}"
-    target_prefix = "S3/hasura-merchant-${var.region}-${var.hasura_subdomain}-${var.domain}/"
-  }*/
 
   server_side_encryption_configuration {
     rule {
