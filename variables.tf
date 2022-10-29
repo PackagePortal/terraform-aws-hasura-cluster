@@ -103,14 +103,14 @@ variable "hasura_cors_domain" {
 }
 
 variable "cpu_size" {
-  type        = string
-  default     = "512"
+  type        = number
+  default     = 512
   description = "CPU Units for ECS Cluster"
 }
 
 variable "memory_size" {
-  type        = string
-  default     = "1024"
+  type        = number
+  default     = 1024
   description = "Memory Units for ECS Cluster"
 }
 
@@ -234,14 +234,14 @@ variable "use_actions_endpoint" {
 }
 
 variable "actions_endpoints_cpu_limit" {
-  type        = string
-  default     = "256"
+  type        = number
+  default     = 256
   description = "CPU Units limit for actions endpoints"
 }
 
 variable "actions_endpoints_memory_limit" {
-  type        = string
-  default     = "512"
+  type        = number
+  default     = 512
   description = "Memory Units for actions endpoints"
 }
 

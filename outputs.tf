@@ -33,6 +33,11 @@ output "alb_dns" {
   value = aws_alb.hasura.dns_name
 }
 
+output "alb_zone_id" {
+  description = "Application load balancer DNS name"
+  value = aws_alb.hasura.zone_id
+}
+
 output "iam_role" {
   description = "IAM role ECS tasks use"
   value = aws_iam_role.hasura_role
