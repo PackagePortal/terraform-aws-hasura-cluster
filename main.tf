@@ -16,10 +16,11 @@ locals {
 
 # Create var.az_count private subnets for RDS, each in a different AZ
 resource "aws_subnet" "hasura_private" {
-  count             = var.az_count
-  cidr_block        = cidrsubnet(data.aws_vpc.hasura.cidr_block, 8, count.index + var.cidr_bit_offset)
-  availability_zone = data.aws_availability_zones.available.names[count.index]
-  vpc_id            = data.aws_vpc.hasura.id
+  count                   = var.az_count
+  cidr_block              = cidrsubnet(data.aws_vpc.hasura.cidr_block, 8, count.index + var.cidr_bit_offset)
+  availability_zone       = data.aws_availability_zones.available.names[count.index]
+  vpc_id                  = data.aws_vpc.hasura.id
+  map_public_ip_on_launch = var.tasks_public_ip
 
   tags = {
     Name = "${var.env_name} ${var.app_name} hasura #${count.index} (private)"
@@ -42,7 +43,7 @@ resource "aws_subnet" "hasura_public" {
   cidr_block              = cidrsubnet(data.aws_vpc.hasura.cidr_block, 8, var.az_count + count.index + var.cidr_bit_offset)
   availability_zone       = data.aws_availability_zones.available.names[count.index]
   vpc_id                  = data.aws_vpc.hasura.id
-  map_public_ip_on_launch = var.internal_alb
+  map_public_ip_on_launch = var.internal_alb == false
 
   tags = merge({
     Name = "${var.env_name} ${var.app_name} hasura #${var.az_count + count.index} (ALB)"
@@ -172,6 +173,7 @@ resource "aws_ecs_service" "hasura" {
   network_configuration {
     security_groups = [aws_security_group.hasura_ecs.id]
     subnets         = aws_subnet.hasura_private.*.id
+    assign_public_ip = var.tasks_public_ip
   }
 
   capacity_provider_strategy {

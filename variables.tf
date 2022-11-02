@@ -286,3 +286,9 @@ variable "custom_auth_url" {
   description = "Custom authentication url, defaults to auth path of actions server"
   default     = "http://localhost:5000/auth"
 }
+
+variable "tasks_public_ip" {
+  type        = bool
+  description = "Whether or not the Hasura tasks get assigned a public IP. Set to true if you are not using a NAT Gateway for private traffic"
+  default     = false
+}
