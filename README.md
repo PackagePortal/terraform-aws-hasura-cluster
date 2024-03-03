@@ -11,8 +11,9 @@ This module expands on the work in this repo https://github.com/Rayraegah/terraf
   - Can be configured to be intenral or external as well as http or https. If using https
   the ACM ceritificate needs to be provided.
 - ECS Cluster
-  - Has a task running Hasura and an optionally created extra task for running endpoints
+  - Has a service that runs a task for Hasura and an optionally created extra task for running endpoints
     for Hasura actions
+  - Auto scaling can be configured
 - Public subnet to hold ALB
 - Private subnet for Hasura instance
 - Network security groups for private and public subnets
@@ -40,7 +41,7 @@ with no actions endpoints, using JWT auth (i.e. Firebase).
 ```terraform
 module "example" {
   source                 = "PackagePortal/terraform-aws-hasura-cluster"
-  version                = "v1.0.x"
+  version                = "v1.1.x"
   
   # General Settings
   app_name               = "my-hasura-app"
@@ -54,7 +55,13 @@ module "example" {
   rds_username           = "admin"
   rds_password           = var.rds_pass
   read_replica_enabled   = false
-  
+
+  # Auto scaling settings - scale out up to 10 at 100% cpu or ram
+  auto_scaling_ram_scale_out_percent = 100
+  auto_scaling_cpu_scale_out_percent = 100
+  auto_scaling_max                   = 10
+  auto_scaling_min                   = 1
+
   # Network Settings
   vpc_id                         = var.vpc_id
   cidr_bit_offset                = 8 # bit offset for subnets
@@ -219,6 +226,9 @@ Created with [terraform-docs](https://github.com/terraform-docs/terraform-docs)
 | [aws_security_group.hasura_rds](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
 | [aws_subnet.hasura_private](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/subnet) | resource |
 | [aws_subnet.hasura_public](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/subnet) | resource |
+| [aws_appautoscaling_target.hasura_target](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_target) | resource |
+| [aws_appautoscaling_policy.hasura_memory_autoscaling_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_policy) | resource |
+| [aws_appautoscaling_policy.hasura_cpu_autoscaling_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_policy) | resource |
 | [aws_availability_zones.available](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/availability_zones) | data source |
 | [aws_elb_service_account.main](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/elb_service_account) | data source |
 | [aws_iam_policy_document.ecr_image_pull](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
@@ -242,6 +252,10 @@ Created with [terraform-docs](https://github.com/terraform-docs/terraform-docs)
 | <a name="input_additional_db_security_groups"></a> [additional\_db\_security\_groups](#input\_additional\_db\_security\_groups) | List of Security Group IDs to have access to the RDS instance | `list` | `[]` | no |
 | <a name="input_alb_port"></a> [alb\_port](#input\_alb\_port) | Port ALB will listen on. Defaults to 443 for SSL | `number` | `443` | no |
 | <a name="input_app_name"></a> [app\_name](#input\_app\_name) | Used to name the hasura instance | `string` | n/a | yes |
+| <a name="input_auto_scaling_max"></a> [auto\_scaling\_max](#input\_auto\_scaling\_max) | Maximum number of Hasura instances | `number` | n/a | no |
+| <a name="input_auto_scaling_min"></a> [auto\_scaling\_min](#input\_auto_scaling_min) | Minimum number of Hasura instances | `number` | n/a | no |
+| <a name="input_auto_scaling_ram_scale_out_percent"></a> [auto\_scaling\_ram\_scale\_out\_percent](#input\_auto\_scaling\_ram\_scale\_out\_percent) | RAM utilization percentage to scale out at | `number` | n/a | no |
+| <a name="input_auto_scaling_cpu_scale_out_percent"></a> [auto\_scaling\_cpu\_scale\_out\_percent](#input\_auto\_scaling\_cpu\_scale\_out\_percent) | CPU utilization percentage to scale out at | `number` | n/a | no |
 | <a name="input_az_count"></a> [az\_count](#input\_az\_count) | How many AZ's to create in the VPC | `number` | `2` | no |
 | <a name="input_capacity_provider"></a> [capacity\_provider](#input\_capacity\_provider) | Capacity provider for tasks | `string` | `"FARGATE_SPOT"` | no |
 | <a name="input_cidr_bit_offset"></a> [cidr\_bit\_offset](#input\_cidr\_bit\_offset) | CIDR offset for calculating subnets | `number` | `0` | no |

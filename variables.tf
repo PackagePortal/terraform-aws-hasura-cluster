@@ -127,13 +127,13 @@ variable "auto_scaling_min" {
 }
 
 variable "auto_scaling_ram_scale_out_percent" {
-  description = "Maximum number of Hasura instances"
+  description = "RAM utilization percentage to scale out at"
   type        = number
   default     = 80
 }
 
 variable "auto_scaling_cpu_scale_out_percent" {
-  description = "Minimum number of Hasura instances"
+  description = "CPU utilization percentage to scale out at"
   type        = number
   default     = 80
 }
