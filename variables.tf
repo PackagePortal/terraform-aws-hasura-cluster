@@ -114,6 +114,30 @@ variable "memory_size" {
   description = "Memory Units for ECS Cluster"
 }
 
+variable "auto_scaling_max" {
+  description = "Maximum number of Hasura instances"
+  type        = number
+  default     = 1
+}
+
+variable "auto_scaling_min" {
+  description = "Minimum number of Hasura instances"
+  type        = number
+  default     = 1
+}
+
+variable "auto_scaling_ram_scale_out_percent" {
+  description = "Maximum number of Hasura instances"
+  type        = number
+  default     = 80
+}
+
+variable "auto_scaling_cpu_scale_out_percent" {
+  description = "Minimum number of Hasura instances"
+  type        = number
+  default     = 80
+}
+
 ###########################
 # Network related variables
 ###########################

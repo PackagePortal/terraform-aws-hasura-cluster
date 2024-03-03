@@ -236,3 +236,42 @@ resource "aws_alb_listener" "hasura" {
   }
   tags = var.tags
 }
+
+resource "aws_appautoscaling_target" "hasura_target" {
+  max_capacity       = var.auto_scaling_max
+  min_capacity       = var.auto_scaling_min
+  resource_id        = "service/${aws_ecs_cluster.hasura.name}/${aws_ecs_service.hasura.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+  tags = var.tags
+}
+
+resource "aws_appautoscaling_policy" "hasura_memory_autoscaling_policy" {
+  name               = "${var.env_name}-${var.app_name}-hasura-memory-policy"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.hasura_target.resource_id
+  scalable_dimension = aws_appautoscaling_target.hasura_target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.hasura_target.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageMemoryUtilization"
+    }
+    target_value = var.auto_scaling_ram_scale_out_percent
+  }
+}
+
+resource "aws_appautoscaling_policy" "hasura_cpu_autoscaling_policy" {
+  name = "${var.env_name}-${var.app_name}-hasura-cpu-policy"
+  policy_type = "TargetTrackingScaling"
+  resource_id = aws_appautoscaling_target.hasura_target.resource_id
+  scalable_dimension = aws_appautoscaling_target.hasura_target.scalable_dimension
+  service_namespace = aws_appautoscaling_target.hasura_target.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+    target_value = var.auto_scaling_cpu_scale_out_percent
+  }
+}
