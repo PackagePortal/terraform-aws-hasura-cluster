@@ -248,6 +248,18 @@ variable "read_replica_rds_instance" {
   description = "What size read replica to create"
 }
 
+variable "maintenance_window" {
+  type        = string
+  description = "When to perform maintenance on the RDS instance"
+  default = "sun:06:00-sun:08:00"
+}
+
+variable "backup_window" {
+  type        = string
+  description = "When to perform backups on the RDS instance"
+  default     = "04:00-06:00"
+}
+
 ########################################################
 # Variables controlling the actions endpoints container
 ########################################################

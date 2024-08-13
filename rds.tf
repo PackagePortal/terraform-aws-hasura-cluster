@@ -24,11 +24,11 @@ resource "aws_db_instance" "hasura" {
   allow_major_version_upgrade = false
   auto_minor_version_upgrade  = true
   apply_immediately           = true
-  maintenance_window          = "sun:06:00-sun:08:00"
+  maintenance_window          = var.maintenance_window
   skip_final_snapshot         = false
   copy_tags_to_snapshot       = true
   backup_retention_period     = 7
-  backup_window               = "04:00-06:00"
+  backup_window               = var.backup_window
   final_snapshot_identifier   = "hasura"
   deletion_protection         = true
 
@@ -54,11 +54,11 @@ resource "aws_db_instance" "read_replica_hasura" {
   allow_major_version_upgrade = false
   auto_minor_version_upgrade  = true
   apply_immediately           = true
-  maintenance_window          = "sun:06:00-sun:08:00"
+  maintenance_window          = var.maintenance_window
   skip_final_snapshot         = false
   copy_tags_to_snapshot       = true
   backup_retention_period     = 0
-  backup_window               = "04:00-06:00"
+  backup_window               = var.backup_window
   final_snapshot_identifier   = "hasura"
   deletion_protection         = true
 
