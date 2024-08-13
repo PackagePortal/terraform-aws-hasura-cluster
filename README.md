@@ -286,6 +286,8 @@ Created with [terraform-docs](https://github.com/terraform-docs/terraform-docs)
 | <a name="input_rds_username"></a> [rds\_username](#input\_rds\_username) | The username for RDS | `string` | n/a | yes |
 | <a name="input_read_replica_enabled"></a> [read\_replica\_enabled](#input\_read\_replica\_enabled) | Create a read replica or not | `bool` | `false` | no |
 | <a name="input_read_replica_rds_instance"></a> [read\_replica\_rds\_instance](#input\_read\_replica\_rds\_instance) | What size read replica to create | `string` | `"db.t2.small"` | no |
+| <a name="input\backup_window"></a> [backup\_window](#input\_backup\_window) | When to perform backups on the RDS instance | `string` | `04:00-06:00` | no |
+| <a name="input_maintenance_window"></a> [maintenance\_window](#input\_maintenance\_window) | When to perform maintenance on the RDS instance | `string` | `sun:06:00-sun:08:00` | no |
 | <a name="input_region"></a> [region](#input\_region) | AWS region to deploy in | `string` | `"us-east-1"` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | AWS Resource tags | `map(string)` | `{}` | no |
 | <a name="input_use_actions_endpoint"></a> [use\_actions\_endpoint](#input\_use\_actions\_endpoint) | Whether or not to create the custom actions endpoint container | `bool` | `false` | no |
