@@ -1,4 +1,14 @@
 # terraform-aws-hasura-cluster
+
+## Notice
+**With the release of the Hasura DDN, this repo will not work for new Hasura projects.**
+
+This repo's deployment model only works for legacy (v2) Hasura deployments, since the DDN requires
+a fundamentally different deployment model, this repo will not be updated to support it.
+
+For new deployment guides see this overview: https://hasura.io/docs/3.0/deployment/overview
+
+--------------------
 Manages the creation of an ECS Fargate Cluster running Hasura, an RDS instance, a load
 balancer and the associated network resources. See What this module creates for a full list
 of what it creates in terraform. See Examples for annotated examples showing how to set up
@@ -287,6 +297,8 @@ Created with [terraform-docs](https://github.com/terraform-docs/terraform-docs)
 | <a name="input_read_replica_enabled"></a> [read\_replica\_enabled](#input\_read\_replica\_enabled) | Create a read replica or not | `bool` | `false` | no |
 | <a name="input_read_replica_rds_instance"></a> [read\_replica\_rds\_instance](#input\_read\_replica\_rds\_instance) | What size read replica to create | `string` | `"db.t2.small"` | no |
 | <a name="input\backup_window"></a> [backup\_window](#input\_backup\_window) | When to perform backups on the RDS instance | `string` | `04:00-06:00` | no |
+| <a name="input\performance_insights_enabled"></a> [performance\_insights\_enabled](#input\_performance\_insights_\enabled) | Enable perofmrance insights for the RDS instance | `boolean` | `false` | no |
+| <a name="input\performance_insights_retention_period"></a> [performance\_insights\_retention_period](#input\performance\_insights\_retention\_period) | Performance insights retention period | `number` | `7` | no |
 | <a name="input_maintenance_window"></a> [maintenance\_window](#input\_maintenance\_window) | When to perform maintenance on the RDS instance | `string` | `sun:06:00-sun:08:00` | no |
 | <a name="input_region"></a> [region](#input\_region) | AWS region to deploy in | `string` | `"us-east-1"` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | AWS Resource tags | `map(string)` | `{}` | no |
