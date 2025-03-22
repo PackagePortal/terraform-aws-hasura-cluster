@@ -260,6 +260,18 @@ variable "backup_window" {
   default     = "04:00-06:00"
 }
 
+variable "performance_insights_enabled" {
+  type        = bool
+  description = "Enable performance insights for the RDS instance"
+  default     = false
+}
+
+variable "performance_insights_retention_period" {
+  type        = number
+  description = "Performance insights retention period"
+  default     = 7
+}
+
 ########################################################
 # Variables controlling the actions endpoints container
 ########################################################

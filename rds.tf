@@ -32,6 +32,9 @@ resource "aws_db_instance" "hasura" {
   final_snapshot_identifier   = "hasura"
   deletion_protection         = true
 
+  performance_insights_enabled = var.performance_insights_enabled
+  performance_insights_retention_period = var.performance_insights_retention_period
+
   tags = var.tags
 }
 
