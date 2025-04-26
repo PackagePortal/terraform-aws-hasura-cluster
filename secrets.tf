@@ -10,6 +10,7 @@ resource "aws_secretsmanager_secret_version" "db_url" {
 
 resource "aws_secretsmanager_secret" "admin_secret" {
   name = "${var.env_name}-${var.app_name}-admin-secret"
+  tags = var.tags
 }
 
 resource "aws_secretsmanager_secret_version" "admin_secret" {
