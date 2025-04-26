@@ -1,5 +1,6 @@
 resource "aws_secretsmanager_secret" "db_url" {
   name = "${var.env_name}-${var.app_name}-db-url"
+  tags = var.tags
 }
 
 resource "aws_secretsmanager_secret_version" "db_url" {
@@ -19,6 +20,7 @@ resource "aws_secretsmanager_secret_version" "admin_secret" {
 resource "aws_secretsmanager_secret" "jwt_secret" {
   count = var.use_jwt_auth ? 1 : 0
   name  = "${var.env_name}-${var.app_name}-jwt-secret"
+  tags  = var.tags
 }
 
 resource "aws_secretsmanager_secret_version" "jwt_secret" {
@@ -30,6 +32,7 @@ resource "aws_secretsmanager_secret_version" "jwt_secret" {
 resource "aws_secretsmanager_secret" "other_secrets" {
   count = length(var.hasura_secrets)
   name  = "${var.env_name}-${var.app_name}-${var.hasura_secrets[count.index].name}"
+  tags  = var.tags
 }
 
 resource "aws_secretsmanager_secret_version" "other_secrets" {
@@ -45,6 +48,7 @@ resource "aws_secretsmanager_secret_version" "other_secrets" {
 resource "aws_secretsmanager_secret" "actions_endpoints_secrets" {
   count = length(var.actions_endpoints_secrets)
   name  = "${var.env_name}-${var.app_name}-${var.actions_endpoints_secrets[count.index].name}"
+  tags  = var.tags
 }
 
 resource "aws_secretsmanager_secret_version" "actions_endpoints_secrets" {
