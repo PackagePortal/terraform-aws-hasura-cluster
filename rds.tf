@@ -29,7 +29,6 @@ resource "aws_db_instance" "hasura" {
   copy_tags_to_snapshot       = true
   backup_retention_period     = 7
   backup_window               = var.backup_window
-  final_snapshot_identifier   = "hasura"
   deletion_protection         = true
 
   performance_insights_enabled = var.performance_insights_enabled
@@ -40,10 +39,7 @@ resource "aws_db_instance" "hasura" {
 
 resource "aws_db_instance" "read_replica_hasura" {
   count                = var.read_replica_enabled ? 1 : 0
-  name                 = var.rds_db_name
   identifier           = "${var.env_name}-${var.app_name}-hasura-read-replica"
-  username             = "" # Do not set the user name/password for a replica
-  password             = ""
   port                 = "5432"
   instance_class       = var.read_replica_rds_instance
   allocated_storage    = var.env_name == "prod" ? "100" : "10"
@@ -62,7 +58,6 @@ resource "aws_db_instance" "read_replica_hasura" {
   copy_tags_to_snapshot       = true
   backup_retention_period     = 0
   backup_window               = var.backup_window
-  final_snapshot_identifier   = "hasura"
   deletion_protection         = true
 
   tags = var.tags
