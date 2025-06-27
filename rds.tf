@@ -56,7 +56,7 @@ resource "aws_db_instance" "read_replica_hasura" {
   maintenance_window          = var.maintenance_window
   skip_final_snapshot         = false
   copy_tags_to_snapshot       = true
-  backup_retention_period     = 0
+  backup_retention_period     = 7
   backup_window               = var.backup_window
   deletion_protection         = true
 
