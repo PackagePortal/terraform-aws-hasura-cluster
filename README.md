@@ -71,6 +71,7 @@ module "example" {
   auto_scaling_cpu_scale_out_percent = 100
   auto_scaling_max                   = 10
   auto_scaling_min                   = 1
+  ecs_container_insights_enabled     = true # Turn this on to enable container insights
 
   # Network Settings
   vpc_id                         = var.vpc_id
@@ -266,6 +267,7 @@ Created with [terraform-docs](https://github.com/terraform-docs/terraform-docs)
 | <a name="input_auto_scaling_min"></a> [auto\_scaling\_min](#input\_auto_scaling_min) | Minimum number of Hasura instances | `number` | n/a | no |
 | <a name="input_auto_scaling_ram_scale_out_percent"></a> [auto\_scaling\_ram\_scale\_out\_percent](#input\_auto\_scaling\_ram\_scale\_out\_percent) | RAM utilization percentage to scale out at | `number` | n/a | no |
 | <a name="input_auto_scaling_cpu_scale_out_percent"></a> [auto\_scaling\_cpu\_scale\_out\_percent](#input\_auto\_scaling\_cpu\_scale\_out\_percent) | CPU utilization percentage to scale out at | `number` | n/a | no |
+| <a name="ecs_container_insights_enabled"></a> [ecs\_container\_insights\_enabled](#input\_ecs\_container\_insights\_enabled) | ECS container insights setting enabled/disabled toggle | `boolean` |`false` | no |
 | <a name="input_az_count"></a> [az\_count](#input\_az\_count) | How many AZ's to create in the VPC | `number` | `2` | no |
 | <a name="input_capacity_provider"></a> [capacity\_provider](#input\_capacity\_provider) | Capacity provider for tasks | `string` | `"FARGATE_SPOT"` | no |
 | <a name="input_cidr_bit_offset"></a> [cidr\_bit\_offset](#input\_cidr\_bit\_offset) | CIDR offset for calculating subnets | `number` | `0` | no |

@@ -143,6 +143,14 @@ resource "aws_ecs_cluster" "hasura" {
     capacity_provider = var.capacity_provider
   }
 
+  dynamic "setting" {
+    for_each = var.ecs_container_insights_enabled ? [1] : []
+    content {
+      name  = "containerInsights"
+      value = "enabled"
+    }
+  }
+
   tags = var.tags
 }
 

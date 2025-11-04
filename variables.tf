@@ -138,6 +138,12 @@ variable "auto_scaling_cpu_scale_out_percent" {
   default     = 80
 }
 
+variable "ecs_container_insights_enabled" {
+  description = "ECS container insights setting enabled/disabled toggle"
+  type        = bool
+  default     = false
+}
+
 ###########################
 # Network related variables
 ###########################
