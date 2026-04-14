@@ -271,6 +271,7 @@ Created with [terraform-docs](https://github.com/terraform-docs/terraform-docs)
 | <a name="input_az_count"></a> [az\_count](#input\_az\_count) | How many AZ's to create in the VPC | `number` | `2` | no |
 | <a name="input_capacity_provider"></a> [capacity\_provider](#input\_capacity\_provider) | Capacity provider for tasks | `string` | `"FARGATE_SPOT"` | no |
 | <a name="input_cidr_bit_offset"></a> [cidr\_bit\_offset](#input\_cidr\_bit\_offset) | CIDR offset for calculating subnets | `number` | `0` | no |
+| <a name="input_subnet_cidr_base"></a> [subnet\_cidr\_base](#input\_subnet\_cidr\_base) | CIDR block to use as the base when calculating subnet CIDRs. Defaults to the VPC CIDR block if not provided. | `string` | `null` | no |
 | <a name="input_cpu_size"></a> [cpu\_size](#input\_cpu\_size) | CPU Units for ECS Cluster | `string` | `"512"` | no |
 | <a name="input_create_iam_service_linked_role"></a> [create\_iam\_service\_linked\_role](#input\_create\_iam\_service\_linked\_role) | Whether to create IAM service linked role for AWS. One needed per AWS account. | `bool` | `true` | no |
 | <a name="input_custom_auth_url"></a> [custom\_auth\_url](#input\_custom\_auth\_url) | Custom authentication url, defaults to auth path of actions server | `string` | `"http://localhost:5000/auth"` | no |

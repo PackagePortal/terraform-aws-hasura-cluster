@@ -7,7 +7,8 @@ data "aws_vpc" "hasura" {
 }
 
 locals {
-  https = var.alb_port == 443
+  https            = var.alb_port == 443
+  subnet_cidr_base = var.subnet_cidr_base != null ? var.subnet_cidr_base : data.aws_vpc.hasura.cidr_block
 }
 
 ####################
@@ -17,7 +18,7 @@ locals {
 # Create var.az_count private subnets for RDS, each in a different AZ
 resource "aws_subnet" "hasura_private" {
   count                   = var.az_count
-  cidr_block              = cidrsubnet(data.aws_vpc.hasura.cidr_block, 8, count.index + var.cidr_bit_offset)
+  cidr_block              = cidrsubnet(local.subnet_cidr_base, 8, count.index + var.cidr_bit_offset)
   availability_zone       = data.aws_availability_zones.available.names[count.index]
   vpc_id                  = data.aws_vpc.hasura.id
   map_public_ip_on_launch = var.tasks_public_ip
@@ -40,7 +41,7 @@ resource "aws_route_table_association" "private_subnet_route_table_id" {
 # Create var.az_count public subnets for ALBs, each in a different AZ
 resource "aws_subnet" "hasura_public" {
   count                   = var.az_count
-  cidr_block              = cidrsubnet(data.aws_vpc.hasura.cidr_block, 8, var.az_count + count.index + var.cidr_bit_offset)
+  cidr_block              = cidrsubnet(local.subnet_cidr_base, 8, var.az_count + count.index + var.cidr_bit_offset)
   availability_zone       = data.aws_availability_zones.available.names[count.index]
   vpc_id                  = data.aws_vpc.hasura.id
   map_public_ip_on_launch = var.internal_alb == false

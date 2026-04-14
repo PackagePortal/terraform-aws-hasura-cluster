@@ -173,6 +173,12 @@ variable "cidr_bit_offset" {
   description = "CIDR offset for calculating subnets"
 }
 
+variable "subnet_cidr_base" {
+  type        = string
+  default     = null
+  description = "CIDR block to use as the base when calculating subnet CIDRs. Defaults to the VPC CIDR block if not provided."
+}
+
 variable "internet_route_table_id" {
   type        = string
   description = "Route table for public subnets"
