@@ -144,6 +144,12 @@ variable "ecs_container_insights_enabled" {
   default     = false
 }
 
+variable "readonly_root_filesystem" {
+  description = "Whether to run ECS containers with a read-only root filesystem"
+  type        = bool
+  default     = false
+}
+
 ###########################
 # Network related variables
 ###########################

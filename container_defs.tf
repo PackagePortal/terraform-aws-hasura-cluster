@@ -26,6 +26,7 @@ locals {
     image       = var.actions_endpoints_image
     cpu         = var.actions_endpoints_cpu_limit
     memory      = var.actions_endpoints_memory_limit
+    readonlyRootFilesystem = var.readonly_root_filesystem
     portMappings = [
       {
         containerPort = var.actions_endpoints_port,
@@ -72,6 +73,7 @@ locals {
       image       = "${var.hasura_image_base}:${var.hasura_version_tag}"
       name        = "hasura",
       networkMode = "awsvpc",
+      readonlyRootFilesystem = var.readonly_root_filesystem,
 
       portMappings = [
         {
