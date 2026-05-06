@@ -16,6 +16,11 @@ various uses.
 
 This module expands on the work in this repo https://github.com/Rayraegah/terraform-aws-hasura
 
+When `readonly_root_filesystem` is enabled, the module now mounts task-scoped writable `/tmp`
+volumes for the Hasura container and the optional actions container. Use
+`task_ephemeral_storage_size_in_gib` to increase the default Fargate scratch capacity when the
+containers need more than the platform default.
+
 ## What this module creates
 - Application Load Balancer (ALB)
   - Can be configured to be intenral or external as well as http or https. If using https
@@ -270,6 +275,7 @@ Created with [terraform-docs](https://github.com/terraform-docs/terraform-docs)
 | <a name="input_auto_scaling_cpu_scale_out_percent"></a> [auto\_scaling\_cpu\_scale\_out\_percent](#input\_auto\_scaling\_cpu\_scale\_out\_percent) | CPU utilization percentage to scale out at | `number` | n/a | no |
 | <a name="ecs_container_insights_enabled"></a> [ecs\_container\_insights\_enabled](#input\_ecs\_container\_insights\_enabled) | ECS container insights setting enabled/disabled toggle | `boolean` |`false` | no |
 | <a name="input_readonly_root_filesystem"></a> [readonly_root_filesystem](#input_readonly_root_filesystem) | Whether to run ECS containers with a read-only root filesystem | `boolean` | `false` | no |
+| <a name="input_task_ephemeral_storage_size_in_gib"></a> [task\_ephemeral\_storage\_size\_in\_gib](#input\_task\_ephemeral\_storage\_size\_in\_gib) | Optional Fargate task ephemeral storage size in GiB. Set this to increase writable scratch storage beyond the default 20 GiB. | `number` | `null` | no |
 | <a name="input_az_count"></a> [az\_count](#input\_az\_count) | How many AZ's to create in the VPC | `number` | `2` | no |
 | <a name="input_capacity_provider"></a> [capacity\_provider](#input\_capacity\_provider) | Capacity provider for tasks | `string` | `"FARGATE_SPOT"` | no |
 | <a name="input_cidr_bit_offset"></a> [cidr\_bit\_offset](#input\_cidr\_bit\_offset) | CIDR offset for calculating subnets | `number` | `0` | no |

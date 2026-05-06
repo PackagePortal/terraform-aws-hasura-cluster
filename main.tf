@@ -164,6 +164,20 @@ resource "aws_ecs_task_definition" "hasura" {
   execution_role_arn       = aws_iam_role.hasura_role.arn
   task_role_arn            = aws_iam_role.hasura_role.arn
 
+  dynamic "volume" {
+    for_each = local.task_tmp_volumes
+    content {
+      name = volume.value
+    }
+  }
+
+  dynamic "ephemeral_storage" {
+    for_each = var.task_ephemeral_storage_size_in_gib == null ? [] : [var.task_ephemeral_storage_size_in_gib]
+    content {
+      size_in_gib = ephemeral_storage.value
+    }
+  }
+
   container_definitions = jsonencode(local.ecs_container_definitions)
   tags                  = var.tags
 }

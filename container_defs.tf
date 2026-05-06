@@ -1,4 +1,21 @@
 locals {
+  hasura_tmp_mount = {
+    sourceVolume  = "hasura-tmp"
+    containerPath = "/tmp"
+    readOnly      = false
+  }
+
+  actions_tmp_mount = {
+    sourceVolume  = "actions-tmp"
+    containerPath = "/tmp"
+    readOnly      = false
+  }
+
+  task_tmp_volumes = concat(
+    var.readonly_root_filesystem ? [local.hasura_tmp_mount.sourceVolume] : [],
+    var.readonly_root_filesystem && var.use_actions_endpoint ? [local.actions_tmp_mount.sourceVolume] : []
+  )
+
   # auth_hook and jwt_hook are optional settings for auth hooks
   auth_hook = var.use_custom_auth_webhook ? [{
     name  = "HASURA_GRAPHQL_AUTH_HOOK"
@@ -20,7 +37,7 @@ locals {
     }
   ])
 
-  actions_image = {
+  actions_image = merge({
     networkMode = "awsvpc"
     name        = "actions_endpoints"
     image       = var.actions_endpoints_image
@@ -56,7 +73,9 @@ locals {
         value : "http://localhost:8080/v1/graphql"
       }
     ], var.actions_endpoints_env))
-  }
+  }, var.readonly_root_filesystem ? {
+    mountPoints = [local.actions_tmp_mount]
+  } : {})
 
   other_secrets = [for index, secret in var.hasura_secrets : {
     "name"      = secret.name,
@@ -69,7 +88,7 @@ locals {
   }]
 
   ecs_container_definitions = concat([
-    {
+    merge({
       image       = "${var.hasura_image_base}:${var.hasura_version_tag}"
       name        = "hasura",
       networkMode = "awsvpc",
@@ -109,6 +128,8 @@ locals {
           }
         ] : [],
       local.other_secrets)
-    }
+    }, var.readonly_root_filesystem ? {
+      mountPoints = [local.hasura_tmp_mount]
+    } : {})
   ], var.use_actions_endpoint ? [local.actions_image] : [])
 }
