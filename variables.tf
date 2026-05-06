@@ -150,6 +150,12 @@ variable "readonly_root_filesystem" {
   default     = false
 }
 
+variable "task_ephemeral_storage_size_in_gib" {
+  description = "Optional Fargate task ephemeral storage size in GiB. Set this to increase writable scratch storage beyond the default 20 GiB."
+  type        = number
+  default     = null
+}
+
 ###########################
 # Network related variables
 ###########################
