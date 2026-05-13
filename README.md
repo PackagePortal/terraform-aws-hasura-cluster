@@ -21,6 +21,13 @@ volumes for the Hasura container and the optional actions container. Use
 `task_ephemeral_storage_size_in_gib` to increase the default Fargate scratch capacity when the
 containers need more than the platform default.
 
+Set `alb_log_bucket_versioning_enabled = true` if you want the ALB access log bucket to retain
+versioned objects.
+
+HTTPS listeners default to `ELBSecurityPolicy-TLS13-1-2-Res-2021-06`, which enforces a
+minimum of TLS 1.2 while allowing TLS 1.3. Use `alb_tls_minimum_version` to tighten or relax
+the minimum TLS version.
+
 ## What this module creates
 - Application Load Balancer (ALB)
   - Can be configured to be intenral or external as well as http or https. If using https
@@ -42,7 +49,8 @@ containers need more than the platform default.
 
 ## Requirements
 - Aws Account and aws cli setup
-- Terraform 0.15+
+- Terraform 1.5+
+- AWS provider 6.x+
 - Existing VPC with Internet Gateway in AWS account and region being deployed to.
 - If using HTTPS ACM certificate for domain ALB will be tied to.
 
@@ -77,7 +85,6 @@ module "example" {
   auto_scaling_max                   = 10
   auto_scaling_min                   = 1
   ecs_container_insights_enabled     = true # Turn this on to enable container insights
-| <a name="input_readonly_root_filesystem"></a> [readonly_root_filesystem](#input_readonly_root_filesystem) | Whether to run ECS containers with a read-only root filesystem | `boolean` | `false` | no |
 
   # Network Settings
   vpc_id                         = var.vpc_id
@@ -199,20 +206,37 @@ module "example" {
 ```
 ## Reference
 
-Created with [terraform-docs](https://github.com/terraform-docs/terraform-docs)
+<!-- BEGIN_TF_DOCS -->
+## Requirements
 
-### Resources
+| Name | Version |
+|------|---------|
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 6.0.0 |
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.44.0 |
+
+## Modules
+
+No modules.
+
+## Resources
 
 | Name | Type |
 |------|------|
-| [aws_alb.hasura](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb) | resource |
-| [aws_alb_listener.hasura](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_listener) | resource |
-| [aws_alb_target_group.hasura](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_target_group) | resource |
+| [aws_appautoscaling_policy.hasura_cpu_autoscaling_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_policy) | resource |
+| [aws_appautoscaling_policy.hasura_memory_autoscaling_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_policy) | resource |
+| [aws_appautoscaling_target.hasura_target](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_target) | resource |
 | [aws_cloudwatch_log_group.hasura](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group) | resource |
 | [aws_db_instance.hasura](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_instance) | resource |
 | [aws_db_instance.read_replica_hasura](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_instance) | resource |
 | [aws_db_subnet_group.hasura](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_subnet_group) | resource |
 | [aws_ecs_cluster.hasura](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_cluster) | resource |
+| [aws_ecs_cluster_capacity_providers.hasura](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_cluster_capacity_providers) | resource |
 | [aws_ecs_service.hasura](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_service) | resource |
 | [aws_ecs_task_definition.hasura](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_task_definition) | resource |
 | [aws_iam_policy.ecr_image_pull](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
@@ -223,11 +247,16 @@ Created with [terraform-docs](https://github.com/terraform-docs/terraform-docs)
 | [aws_iam_role_policy_attachment.hasura_role_log_publishing](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.hasura_secret_read](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_service_linked_role.ecs_service](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_service_linked_role) | resource |
+| [aws_alb.hasura](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb) | resource |
+| [aws_alb_listener.hasura](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_listener) | resource |
+| [aws_alb_target_group.hasura](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_target_group) | resource |
 | [aws_route_table_association.lb_subnet_to_route_table](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route_table_association) | resource |
 | [aws_route_table_association.private_subnet_route_table_id](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route_table_association) | resource |
 | [aws_s3_bucket.hasura](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket_policy.hasura](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_policy) | resource |
 | [aws_s3_bucket_public_access_block.hasura](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_public_access_block) | resource |
+| [aws_s3_bucket_server_side_encryption_configuration.hasura](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_server_side_encryption_configuration) | resource |
+| [aws_s3_bucket_versioning.hasura](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_versioning) | resource |
 | [aws_secretsmanager_secret.actions_endpoints_secrets](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/secretsmanager_secret) | resource |
 | [aws_secretsmanager_secret.admin_secret](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/secretsmanager_secret) | resource |
 | [aws_secretsmanager_secret.db_url](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/secretsmanager_secret) | resource |
@@ -243,9 +272,6 @@ Created with [terraform-docs](https://github.com/terraform-docs/terraform-docs)
 | [aws_security_group.hasura_rds](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
 | [aws_subnet.hasura_private](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/subnet) | resource |
 | [aws_subnet.hasura_public](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/subnet) | resource |
-| [aws_appautoscaling_target.hasura_target](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_target) | resource |
-| [aws_appautoscaling_policy.hasura_memory_autoscaling_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_policy) | resource |
-| [aws_appautoscaling_policy.hasura_cpu_autoscaling_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_policy) | resource |
 | [aws_availability_zones.available](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/availability_zones) | data source |
 | [aws_elb_service_account.main](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/elb_service_account) | data source |
 | [aws_iam_policy_document.ecr_image_pull](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
@@ -255,34 +281,36 @@ Created with [terraform-docs](https://github.com/terraform-docs/terraform-docs)
 | [aws_iam_policy_document.hasura_secret_read](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_vpc.hasura](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/vpc) | data source |
 
-### Inputs
+## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_acm_certificate_arn"></a> [acm\_certificate\_arn](#input\_acm\_certificate\_arn) | Certificate ARN for use with ALB if listening port is 443 | `string` | `""` | no |
-| <a name="input_actions_endpoints_cpu_limit"></a> [actions\_endpoints\_cpu\_limit](#input\_actions\_endpoints\_cpu\_limit) | CPU Units limit for actions endpoints | `string` | `"256"` | no |
+| <a name="input_actions_endpoints_cpu_limit"></a> [actions\_endpoints\_cpu\_limit](#input\_actions\_endpoints\_cpu\_limit) | CPU Units limit for actions endpoints | `number` | `256` | no |
 | <a name="input_actions_endpoints_env"></a> [actions\_endpoints\_env](#input\_actions\_endpoints\_env) | Enviroment vars for actions endpoints container | <pre>list(object({<br>    name  = string<br>    value = string<br>  }))</pre> | `[]` | no |
 | <a name="input_actions_endpoints_image"></a> [actions\_endpoints\_image](#input\_actions\_endpoints\_image) | Docker image name for actions endpoints | `string` | `""` | no |
-| <a name="input_actions_endpoints_memory_limit"></a> [actions\_endpoints\_memory\_limit](#input\_actions\_endpoints\_memory\_limit) | Memory Units for actions endpoints | `string` | `"512"` | no |
+| <a name="input_actions_endpoints_memory_limit"></a> [actions\_endpoints\_memory\_limit](#input\_actions\_endpoints\_memory\_limit) | Memory Units for actions endpoints | `number` | `512` | no |
 | <a name="input_actions_endpoints_port"></a> [actions\_endpoints\_port](#input\_actions\_endpoints\_port) | Port actions endpoints are served on | `number` | `5000` | no |
 | <a name="input_actions_endpoints_secrets"></a> [actions\_endpoints\_secrets](#input\_actions\_endpoints\_secrets) | Values to be stored as secrets for actions endpoints container | <pre>list(object({<br>    name  = string<br>    value = string<br>  }))</pre> | `[]` | no |
 | <a name="input_additional_db_security_groups"></a> [additional\_db\_security\_groups](#input\_additional\_db\_security\_groups) | List of Security Group IDs to have access to the RDS instance | `list` | `[]` | no |
+| <a name="input_alb_log_bucket_lifecycle_rules"></a> [alb\_log\_bucket\_lifecycle\_rules](#input\_alb\_log\_bucket\_lifecycle\_rules) | Lifecycle rules for the ALB access log S3 bucket. Set to null to disable. When non-null, incomplete multipart uploads are aborted after 7 days by default. Set expiration\_days to expire current versions, and noncurrent\_version\_expiration\_days (requires versioning) to expire old versions. | <pre>object({<br>    expiration_days                        = optional(number)<br>    noncurrent_version_expiration_days     = optional(number)<br>    abort_incomplete_multipart_upload_days = optional(number, 7)<br>  })</pre> | `null` | no |
+| <a name="input_alb_log_bucket_versioning_enabled"></a> [alb\_log\_bucket\_versioning\_enabled](#input\_alb\_log\_bucket\_versioning\_enabled) | Whether to enable versioning for the ALB access log bucket | `bool` | `false` | no |
 | <a name="input_alb_port"></a> [alb\_port](#input\_alb\_port) | Port ALB will listen on. Defaults to 443 for SSL | `number` | `443` | no |
+| <a name="input_alb_tls_minimum_version"></a> [alb\_tls\_minimum\_version](#input\_alb\_tls\_minimum\_version) | Minimum TLS version enforced by the HTTPS ALB listener. Valid values are 1.0, 1.1, 1.2, and 1.3. | `string` | `"1.2"` | no |
 | <a name="input_app_name"></a> [app\_name](#input\_app\_name) | Used to name the hasura instance | `string` | n/a | yes |
-| <a name="input_auto_scaling_max"></a> [auto\_scaling\_max](#input\_auto\_scaling\_max) | Maximum number of Hasura instances | `number` | n/a | no |
-| <a name="input_auto_scaling_min"></a> [auto\_scaling\_min](#input\_auto_scaling_min) | Minimum number of Hasura instances | `number` | n/a | no |
-| <a name="input_auto_scaling_ram_scale_out_percent"></a> [auto\_scaling\_ram\_scale\_out\_percent](#input\_auto\_scaling\_ram\_scale\_out\_percent) | RAM utilization percentage to scale out at | `number` | n/a | no |
-| <a name="input_auto_scaling_cpu_scale_out_percent"></a> [auto\_scaling\_cpu\_scale\_out\_percent](#input\_auto\_scaling\_cpu\_scale\_out\_percent) | CPU utilization percentage to scale out at | `number` | n/a | no |
-| <a name="ecs_container_insights_enabled"></a> [ecs\_container\_insights\_enabled](#input\_ecs\_container\_insights\_enabled) | ECS container insights setting enabled/disabled toggle | `boolean` |`false` | no |
-| <a name="input_readonly_root_filesystem"></a> [readonly_root_filesystem](#input_readonly_root_filesystem) | Whether to run ECS containers with a read-only root filesystem | `boolean` | `false` | no |
-| <a name="input_task_ephemeral_storage_size_in_gib"></a> [task\_ephemeral\_storage\_size\_in\_gib](#input\_task\_ephemeral\_storage\_size\_in\_gib) | Optional Fargate task ephemeral storage size in GiB. Set this to increase writable scratch storage beyond the default 20 GiB. | `number` | `null` | no |
+| <a name="input_auto_scaling_cpu_scale_out_percent"></a> [auto\_scaling\_cpu\_scale\_out\_percent](#input\_auto\_scaling\_cpu\_scale\_out\_percent) | CPU utilization percentage to scale out at | `number` | `80` | no |
+| <a name="input_auto_scaling_max"></a> [auto\_scaling\_max](#input\_auto\_scaling\_max) | Maximum number of Hasura instances | `number` | `1` | no |
+| <a name="input_auto_scaling_min"></a> [auto\_scaling\_min](#input\_auto\_scaling\_min) | Minimum number of Hasura instances | `number` | `1` | no |
+| <a name="input_auto_scaling_ram_scale_out_percent"></a> [auto\_scaling\_ram\_scale\_out\_percent](#input\_auto\_scaling\_ram\_scale\_out\_percent) | RAM utilization percentage to scale out at | `number` | `80` | no |
+| <a name="input_aws_backup_role_arns"></a> [aws\_backup\_role\_arns](#input\_aws\_backup\_role\_arns) | IAM role ARNs used by AWS Backup to read the ALB access log bucket (e.g. arn:aws:iam::\<acct\>:role/service-role/AWSBackupDefaultServiceRole). Leave empty to omit the explicit Backup allow. | `list(string)` | `[]` | no |
 | <a name="input_az_count"></a> [az\_count](#input\_az\_count) | How many AZ's to create in the VPC | `number` | `2` | no |
+| <a name="input_backup_window"></a> [backup\_window](#input\_backup\_window) | When to perform backups on the RDS instance | `string` | `"04:00-06:00"` | no |
 | <a name="input_capacity_provider"></a> [capacity\_provider](#input\_capacity\_provider) | Capacity provider for tasks | `string` | `"FARGATE_SPOT"` | no |
 | <a name="input_cidr_bit_offset"></a> [cidr\_bit\_offset](#input\_cidr\_bit\_offset) | CIDR offset for calculating subnets | `number` | `0` | no |
-| <a name="input_subnet_cidr_base"></a> [subnet\_cidr\_base](#input\_subnet\_cidr\_base) | CIDR block to use as the base when calculating subnet CIDRs. Defaults to the VPC CIDR block if not provided. | `string` | `null` | no |
-| <a name="input_cpu_size"></a> [cpu\_size](#input\_cpu\_size) | CPU Units for ECS Cluster | `string` | `"512"` | no |
+| <a name="input_cpu_size"></a> [cpu\_size](#input\_cpu\_size) | CPU Units for ECS Cluster | `number` | `512` | no |
 | <a name="input_create_iam_service_linked_role"></a> [create\_iam\_service\_linked\_role](#input\_create\_iam\_service\_linked\_role) | Whether to create IAM service linked role for AWS. One needed per AWS account. | `bool` | `true` | no |
 | <a name="input_custom_auth_url"></a> [custom\_auth\_url](#input\_custom\_auth\_url) | Custom authentication url, defaults to auth path of actions server | `string` | `"http://localhost:5000/auth"` | no |
+| <a name="input_ecs_container_insights_enabled"></a> [ecs\_container\_insights\_enabled](#input\_ecs\_container\_insights\_enabled) | ECS container insights setting enabled/disabled toggle | `bool` | `false` | no |
 | <a name="input_env_name"></a> [env\_name](#input\_env\_name) | Enviroment prefix on resource names | `string` | n/a | yes |
 | <a name="input_hasura_admin_secret"></a> [hasura\_admin\_secret](#input\_hasura\_admin\_secret) | The admin secret to secure hasura; for admin access | `string` | n/a | yes |
 | <a name="input_hasura_console_enabled"></a> [hasura\_console\_enabled](#input\_hasura\_console\_enabled) | Should the Hasura Console web interface be enabled? | `string` | `"false"` | no |
@@ -296,9 +324,12 @@ Created with [terraform-docs](https://github.com/terraform-docs/terraform-docs)
 | <a name="input_internal_alb"></a> [internal\_alb](#input\_internal\_alb) | Controls map\_public\_ip\_on\_launch for the public subnet, set to false for internal serving. | `bool` | `false` | no |
 | <a name="input_internet_route_table_id"></a> [internet\_route\_table\_id](#input\_internet\_route\_table\_id) | Route table for public subnets | `string` | `""` | no |
 | <a name="input_logs_domain"></a> [logs\_domain](#input\_logs\_domain) | Log domain name | `string` | `"hasura-logs"` | no |
-| <a name="input_memory_size"></a> [memory\_size](#input\_memory\_size) | Memory Units for ECS Cluster | `string` | `"1024"` | no |
+| <a name="input_maintenance_window"></a> [maintenance\_window](#input\_maintenance\_window) | When to perform maintenance on the RDS instance | `string` | `"sun:06:00-sun:08:00"` | no |
+| <a name="input_memory_size"></a> [memory\_size](#input\_memory\_size) | Memory Units for ECS Cluster | `number` | `1024` | no |
 | <a name="input_multi_az"></a> [multi\_az](#input\_multi\_az) | Whether to deploy RDS and ECS in multi AZ mode or not | `bool` | `true` | no |
 | <a name="input_parameter_group_name"></a> [parameter\_group\_name](#input\_parameter\_group\_name) | AWS RDS parameter group - change this for a custom group or non-default pg version | `string` | `"default.postgres14"` | no |
+| <a name="input_performance_insights_enabled"></a> [performance\_insights\_enabled](#input\_performance\_insights\_enabled) | Enable performance insights for the RDS instance | `bool` | `false` | no |
+| <a name="input_performance_insights_retention_period"></a> [performance\_insights\_retention\_period](#input\_performance\_insights\_retention\_period) | Performance insights retention period | `number` | `7` | no |
 | <a name="input_pg_version"></a> [pg\_version](#input\_pg\_version) | Postgres DB version | `string` | `"14.5"` | no |
 | <a name="input_private_subnet_route_table_id"></a> [private\_subnet\_route\_table\_id](#input\_private\_subnet\_route\_table\_id) | Route table for the private subnet | `string` | `""` | no |
 | <a name="input_rds_db_name"></a> [rds\_db\_name](#input\_rds\_db\_name) | The DB name in the RDS instance | `any` | n/a | yes |
@@ -307,23 +338,24 @@ Created with [terraform-docs](https://github.com/terraform-docs/terraform-docs)
 | <a name="input_rds_username"></a> [rds\_username](#input\_rds\_username) | The username for RDS | `string` | n/a | yes |
 | <a name="input_read_replica_enabled"></a> [read\_replica\_enabled](#input\_read\_replica\_enabled) | Create a read replica or not | `bool` | `false` | no |
 | <a name="input_read_replica_rds_instance"></a> [read\_replica\_rds\_instance](#input\_read\_replica\_rds\_instance) | What size read replica to create | `string` | `"db.t2.small"` | no |
-| <a name="input\backup_window"></a> [backup\_window](#input\_backup\_window) | When to perform backups on the RDS instance | `string` | `04:00-06:00` | no |
-| <a name="input\performance_insights_enabled"></a> [performance\_insights\_enabled](#input\_performance\_insights_\enabled) | Enable perofmrance insights for the RDS instance | `boolean` | `false` | no |
-| <a name="input\performance_insights_retention_period"></a> [performance\_insights\_retention_period](#input\performance\_insights\_retention\_period) | Performance insights retention period | `number` | `7` | no |
-| <a name="input_maintenance_window"></a> [maintenance\_window](#input\_maintenance\_window) | When to perform maintenance on the RDS instance | `string` | `sun:06:00-sun:08:00` | no |
+| <a name="input_readonly_root_filesystem"></a> [readonly\_root\_filesystem](#input\_readonly\_root\_filesystem) | Whether to run ECS containers with a read-only root filesystem | `bool` | `false` | no |
 | <a name="input_region"></a> [region](#input\_region) | AWS region to deploy in | `string` | `"us-east-1"` | no |
+| <a name="input_subnet_cidr_base"></a> [subnet\_cidr\_base](#input\_subnet\_cidr\_base) | CIDR block to use as the base when calculating subnet CIDRs. Defaults to the VPC CIDR block if not provided. | `string` | `null` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | AWS Resource tags | `map(string)` | `{}` | no |
+| <a name="input_task_ephemeral_storage_size_in_gib"></a> [task\_ephemeral\_storage\_size\_in\_gib](#input\_task\_ephemeral\_storage\_size\_in\_gib) | Optional Fargate task ephemeral storage size in GiB. Set this to increase writable scratch storage beyond the default 20 GiB. | `number` | `null` | no |
+| <a name="input_tasks_public_ip"></a> [tasks\_public\_ip](#input\_tasks\_public\_ip) | Whether or not the Hasura tasks get assigned a public IP. Set to true if you are not using a NAT Gateway for private traffic | `bool` | `false` | no |
 | <a name="input_use_actions_endpoint"></a> [use\_actions\_endpoint](#input\_use\_actions\_endpoint) | Whether or not to create the custom actions endpoint container | `bool` | `false` | no |
 | <a name="input_use_custom_auth_webhook"></a> [use\_custom\_auth\_webhook](#input\_use\_custom\_auth\_webhook) | Whether or not to use a custom authentication endpoint | `bool` | `false` | no |
 | <a name="input_use_jwt_auth"></a> [use\_jwt\_auth](#input\_use\_jwt\_auth) | Whether to set up JWT auth webhooks on the Hasura instance | `bool` | `false` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | VPC that the hasura instance will be created in. | `string` | n/a | yes |
 
-### Outputs
+## Outputs
 
 | Name | Description |
 |------|-------------|
 | <a name="output_alb_arn"></a> [alb\_arn](#output\_alb\_arn) | Application load balancer ARN |
 | <a name="output_alb_dns"></a> [alb\_dns](#output\_alb\_dns) | Application load balancer DNS name |
+| <a name="output_alb_zone_id"></a> [alb\_zone\_id](#output\_alb\_zone\_id) | Application load balancer DNS name |
 | <a name="output_aws_iam_role_ecs"></a> [aws\_iam\_role\_ecs](#output\_aws\_iam\_role\_ecs) | ECS linked service role if created |
 | <a name="output_ecs_security_group"></a> [ecs\_security\_group](#output\_ecs\_security\_group) | AWS security group for |
 | <a name="output_iam_role"></a> [iam\_role](#output\_iam\_role) | IAM role ECS tasks use |
