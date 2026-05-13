@@ -44,6 +44,18 @@ variable "logs_domain" {
   default     = "hasura-logs"
 }
 
+variable "alb_log_bucket_versioning_enabled" {
+  type        = bool
+  description = "Whether to enable versioning for the ALB access log bucket"
+  default     = false
+}
+
+variable "aws_backup_role_arns" {
+  type        = list(string)
+  description = "IAM role ARNs used by AWS Backup to read the ALB access log bucket (e.g. arn:aws:iam::<acct>:role/service-role/AWSBackupDefaultServiceRole). Leave empty to omit the explicit Backup allow."
+  default     = []
+}
+
 variable "hasura_image_base" {
   type        = string
   description = "What Hasura Docker image to use"
@@ -219,6 +231,17 @@ variable "acm_certificate_arn" {
   type        = string
   description = "Certificate ARN for use with ALB if listening port is 443"
   default     = ""
+}
+
+variable "alb_tls_minimum_version" {
+  type        = string
+  description = "Minimum TLS version enforced by the HTTPS ALB listener. Valid values are 1.0, 1.1, 1.2, and 1.3."
+  default     = "1.2"
+
+  validation {
+    condition     = contains(["1.0", "1.1", "1.2", "1.3"], var.alb_tls_minimum_version)
+    error_message = "alb_tls_minimum_version must be one of 1.0, 1.1, 1.2, or 1.3."
+  }
 }
 
 ##########################

@@ -9,6 +9,13 @@ data "aws_vpc" "hasura" {
 locals {
   https            = var.alb_port == 443
   subnet_cidr_base = var.subnet_cidr_base != null ? var.subnet_cidr_base : data.aws_vpc.hasura.cidr_block
+  alb_tls_policies = {
+    "1.0" = "ELBSecurityPolicy-TLS13-1-0-2021-06"
+    "1.1" = "ELBSecurityPolicy-TLS13-1-1-2021-06"
+    "1.2" = "ELBSecurityPolicy-TLS13-1-2-Res-2021-06"
+    "1.3" = "ELBSecurityPolicy-TLS13-1-3-2021-06"
+  }
+  alb_ssl_policy = local.alb_tls_policies[var.alb_tls_minimum_version]
 }
 
 ####################
@@ -139,11 +146,6 @@ resource "aws_security_group" "hasura_rds" {
 resource "aws_ecs_cluster" "hasura" {
   name = "${var.env_name}-${var.app_name}-hasura-cluster"
 
-  capacity_providers = ["FARGATE", "FARGATE_SPOT"]
-  default_capacity_provider_strategy {
-    capacity_provider = var.capacity_provider
-  }
-
   dynamic "setting" {
     for_each = var.ecs_container_insights_enabled ? [1] : []
     content {
@@ -153,6 +155,17 @@ resource "aws_ecs_cluster" "hasura" {
   }
 
   tags = var.tags
+}
+
+resource "aws_ecs_cluster_capacity_providers" "hasura" {
+  cluster_name = aws_ecs_cluster.hasura.name
+
+  capacity_providers = ["FARGATE", "FARGATE_SPOT"]
+
+  default_capacity_provider_strategy {
+    capacity_provider = var.capacity_provider
+    weight            = 100
+  }
 }
 
 resource "aws_ecs_task_definition" "hasura" {
@@ -184,6 +197,7 @@ resource "aws_ecs_task_definition" "hasura" {
 
 resource "aws_ecs_service" "hasura" {
   depends_on = [
+    aws_ecs_cluster_capacity_providers.hasura,
     aws_ecs_task_definition.hasura,
     aws_cloudwatch_log_group.hasura,
     aws_alb_listener.hasura
@@ -205,7 +219,7 @@ resource "aws_ecs_service" "hasura" {
   }
 
   load_balancer {
-    target_group_arn = aws_alb_target_group.hasura.id
+    target_group_arn = aws_alb_target_group.hasura.arn
     container_name   = "hasura"
     container_port   = "8080"
   }
@@ -248,13 +262,14 @@ resource "aws_alb_target_group" "hasura" {
 }
 
 resource "aws_alb_listener" "hasura" {
-  load_balancer_arn = aws_alb.hasura.id
+  load_balancer_arn = aws_alb.hasura.arn
   port              = var.alb_port
   protocol          = local.https ? "HTTPS" : "HTTP"
   certificate_arn   = local.https ? var.acm_certificate_arn : null
+  ssl_policy        = local.https ? local.alb_ssl_policy : null
 
   default_action {
-    target_group_arn = aws_alb_target_group.hasura.id
+    target_group_arn = aws_alb_target_group.hasura.arn
     type             = "forward"
   }
   tags = var.tags

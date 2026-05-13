@@ -40,5 +40,11 @@ output "alb_zone_id" {
 
 output "iam_role" {
   description = "IAM role ECS tasks use"
-  value = aws_iam_role.hasura_role
+  value = {
+    arn       = aws_iam_role.hasura_role.arn
+    id        = aws_iam_role.hasura_role.id
+    name      = aws_iam_role.hasura_role.name
+    path      = aws_iam_role.hasura_role.path
+    unique_id = aws_iam_role.hasura_role.unique_id
+  }
 }

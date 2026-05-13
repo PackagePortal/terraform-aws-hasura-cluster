@@ -60,6 +60,7 @@ resource "aws_iam_role_policy_attachment" "hasura_role_log_publishing" {
 #############################
 data "aws_iam_policy_document" "hasura" {
   statement {
+    sid       = "AllowELBLogDelivery"
     actions   = ["s3:PutObject"]
     resources = ["${aws_s3_bucket.hasura.arn}/alb/*"]
 
@@ -69,17 +70,52 @@ data "aws_iam_policy_document" "hasura" {
     }
   }
 
+  dynamic "statement" {
+    for_each = length(var.aws_backup_role_arns) > 0 ? [1] : []
+    content {
+      sid    = "AllowAWSBackupRead"
+      effect = "Allow"
+      principals {
+        type        = "AWS"
+        identifiers = var.aws_backup_role_arns
+      }
+      actions = [
+        "s3:GetObject",
+        "s3:GetObjectAcl",
+        "s3:GetObjectTagging",
+        "s3:GetObjectVersion",
+        "s3:GetObjectVersionAcl",
+        "s3:GetObjectVersionTagging",
+        "s3:ListBucket",
+        "s3:ListBucketVersions",
+        "s3:GetBucketTagging",
+        "s3:GetBucketLocation",
+        "s3:GetBucketAcl",
+        "s3:GetBucketVersioning",
+        "s3:GetInventoryConfiguration",
+        "s3:PutInventoryConfiguration",
+        "s3:GetBucketNotification",
+        "s3:PutBucketNotification",
+      ]
+      resources = [
+        aws_s3_bucket.hasura.arn,
+        "${aws_s3_bucket.hasura.arn}/*",
+      ]
+    }
+  }
+
   statement {
+    sid    = "DenyInsecureTransport"
     effect = "Deny"
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+    actions = ["s3:*"]
     resources = [
       aws_s3_bucket.hasura.arn,
       "${aws_s3_bucket.hasura.arn}/*",
     ]
-    actions = ["s3:*"]
-    not_principals {
-      type        = "AWS"
-      identifiers = [data.aws_elb_service_account.main.arn]
-    }
 
     condition {
       test     = "Bool"

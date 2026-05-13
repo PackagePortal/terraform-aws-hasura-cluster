@@ -12,18 +12,29 @@ resource "aws_cloudwatch_log_group" "hasura" {
 ####################
 resource "aws_s3_bucket" "hasura" {
   bucket        = "hasura-${var.app_name}-${var.region}-${var.logs_domain}"
-  acl           = "private"
-  force_destroy = "true"
+  force_destroy = true
+  tags = var.tags
+}
 
-  server_side_encryption_configuration {
-    rule {
-      bucket_key_enabled = false
-      apply_server_side_encryption_by_default {
-        sse_algorithm = "AES256"
-      }
+resource "aws_s3_bucket_server_side_encryption_configuration" "hasura" {
+  bucket = aws_s3_bucket.hasura.id
+
+  rule {
+    bucket_key_enabled = false
+
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
     }
   }
-  tags = var.tags
+}
+
+resource "aws_s3_bucket_versioning" "hasura" {
+  count  = var.alb_log_bucket_versioning_enabled ? 1 : 0
+  bucket = aws_s3_bucket.hasura.id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
 }
 
 resource "aws_s3_bucket_public_access_block" "hasura" {
