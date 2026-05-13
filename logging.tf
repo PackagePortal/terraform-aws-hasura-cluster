@@ -37,6 +37,47 @@ resource "aws_s3_bucket_versioning" "hasura" {
   }
 }
 
+resource "aws_s3_bucket_lifecycle_configuration" "hasura" {
+  count  = var.alb_log_bucket_lifecycle_rules != null ? 1 : 0
+  bucket = aws_s3_bucket.hasura.id
+
+  dynamic "rule" {
+    for_each = var.alb_log_bucket_lifecycle_rules.expiration_days != null ? [1] : []
+    content {
+      id     = "expire-current-versions"
+      status = "Enabled"
+
+      expiration {
+        days = var.alb_log_bucket_lifecycle_rules.expiration_days
+      }
+    }
+  }
+
+  dynamic "rule" {
+    for_each = var.alb_log_bucket_lifecycle_rules.noncurrent_version_expiration_days != null ? [1] : []
+    content {
+      id     = "expire-noncurrent-versions"
+      status = "Enabled"
+
+      noncurrent_version_expiration {
+        noncurrent_days = var.alb_log_bucket_lifecycle_rules.noncurrent_version_expiration_days
+      }
+    }
+  }
+
+  dynamic "rule" {
+    for_each = var.alb_log_bucket_lifecycle_rules.abort_incomplete_multipart_upload_days != null ? [1] : []
+    content {
+      id     = "abort-incomplete-multipart-uploads"
+      status = "Enabled"
+
+      abort_incomplete_multipart_upload {
+        days_after_initiation = var.alb_log_bucket_lifecycle_rules.abort_incomplete_multipart_upload_days
+      }
+    }
+  }
+}
+
 resource "aws_s3_bucket_public_access_block" "hasura" {
   bucket = aws_s3_bucket.hasura.id
 

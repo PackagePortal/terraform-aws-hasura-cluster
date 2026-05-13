@@ -50,6 +50,16 @@ variable "alb_log_bucket_versioning_enabled" {
   default     = false
 }
 
+variable "alb_log_bucket_lifecycle_rules" {
+  type = object({
+    expiration_days                        = optional(number)
+    noncurrent_version_expiration_days     = optional(number)
+    abort_incomplete_multipart_upload_days = optional(number, 7)
+  })
+  description = "Lifecycle rules for the ALB access log S3 bucket. Set to null to disable. When non-null, incomplete multipart uploads are aborted after 7 days by default. Set expiration_days to expire current versions, and noncurrent_version_expiration_days (requires versioning) to expire old versions."
+  default     = null
+}
+
 variable "aws_backup_role_arns" {
   type        = list(string)
   description = "IAM role ARNs used by AWS Backup to read the ALB access log bucket (e.g. arn:aws:iam::<acct>:role/service-role/AWSBackupDefaultServiceRole). Leave empty to omit the explicit Backup allow."
