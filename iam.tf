@@ -146,8 +146,8 @@ data "aws_iam_policy_document" "hasura_secret_read" {
       aws_secretsmanager_secret.admin_secret.arn,
       ],
       var.use_jwt_auth ? [aws_secretsmanager_secret.jwt_secret[0].arn] : [],
-      aws_secretsmanager_secret.other_secrets.*.arn,
-    aws_secretsmanager_secret.actions_endpoints_secrets.*.arn)
+      values(aws_secretsmanager_secret.other_secrets)[*].arn,
+    values(aws_secretsmanager_secret.actions_endpoints_secrets)[*].arn)
   }
 }
 

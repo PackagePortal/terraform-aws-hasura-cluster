@@ -31,33 +31,33 @@ resource "aws_secretsmanager_secret_version" "jwt_secret" {
 }
 
 resource "aws_secretsmanager_secret" "other_secrets" {
-  count = length(var.hasura_secrets)
-  name  = "${var.env_name}-${var.app_name}-${var.hasura_secrets[count.index].name}"
-  tags  = var.tags
+  for_each = { for s in var.hasura_secrets : s.name => s }
+  name     = "${var.env_name}-${var.app_name}-${each.value.name}"
+  tags     = var.tags
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_secretsmanager_secret_version" "other_secrets" {
-  count         = length(var.hasura_secrets)
-  secret_id     = aws_secretsmanager_secret.other_secrets[count.index].id
-  secret_string = var.hasura_secrets[count.index].value
-
-  depends_on = [
-    aws_secretsmanager_secret.other_secrets
-  ]
+  for_each      = { for s in var.hasura_secrets : s.name => s }
+  secret_id     = aws_secretsmanager_secret.other_secrets[each.key].id
+  secret_string = each.value.value
 }
 
 resource "aws_secretsmanager_secret" "actions_endpoints_secrets" {
-  count = length(var.actions_endpoints_secrets)
-  name  = "${var.env_name}-${var.app_name}-${var.actions_endpoints_secrets[count.index].name}"
-  tags  = var.tags
+  for_each = { for s in var.actions_endpoints_secrets : s.name => s }
+  name     = "${var.env_name}-${var.app_name}-${each.value.name}"
+  tags     = var.tags
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_secretsmanager_secret_version" "actions_endpoints_secrets" {
-  count         = length(var.actions_endpoints_secrets)
-  secret_id     = aws_secretsmanager_secret.actions_endpoints_secrets[count.index].id
-  secret_string = var.actions_endpoints_secrets[count.index].value
-
-  depends_on = [
-    aws_secretsmanager_secret.actions_endpoints_secrets
-  ]
+  for_each      = { for s in var.actions_endpoints_secrets : s.name => s }
+  secret_id     = aws_secretsmanager_secret.actions_endpoints_secrets[each.key].id
+  secret_string = each.value.value
 }
