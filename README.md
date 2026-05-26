@@ -28,6 +28,12 @@ HTTPS listeners default to `ELBSecurityPolicy-TLS13-1-2-Res-2021-06`, which enfo
 minimum of TLS 1.2 while allowing TLS 1.3. Use `alb_tls_minimum_version` to tighten or relax
 the minimum TLS version.
 
+## Upgrading
+
+See [CHANGELOG.md](CHANGELOG.md) for what changed in each release, and
+[UPGRADING.md](UPGRADING.md) for step-by-step migration instructions when crossing a major
+version boundary (e.g. v1 → v2).
+
 ## What this module creates
 - Application Load Balancer (ALB)
   - Can be configured to be intenral or external as well as http or https. If using https

@@ -116,6 +116,11 @@ variable "hasura_secrets" {
     name  = string
     value = string
   }))
+
+  validation {
+    condition     = length(var.hasura_secrets) == length(distinct([for s in var.hasura_secrets : s.name]))
+    error_message = "hasura_secrets entries must have unique name values."
+  }
 }
 
 variable "hasura_cors_domain" {
@@ -378,6 +383,11 @@ variable "actions_endpoints_secrets" {
     name  = string
     value = string
   }))
+
+  validation {
+    condition     = length(var.actions_endpoints_secrets) == length(distinct([for s in var.actions_endpoints_secrets : s.name]))
+    error_message = "actions_endpoints_secrets entries must have unique name values."
+  }
 }
 
 variable "use_custom_auth_webhook" {

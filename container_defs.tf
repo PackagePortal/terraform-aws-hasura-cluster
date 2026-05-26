@@ -77,14 +77,14 @@ locals {
     mountPoints = [local.actions_tmp_mount]
   } : {})
 
-  other_secrets = [for index, secret in var.hasura_secrets : {
+  other_secrets = [for secret in var.hasura_secrets : {
     "name"      = secret.name,
-    "valueFrom" = aws_secretsmanager_secret.other_secrets[index].arn
+    "valueFrom" = aws_secretsmanager_secret.other_secrets[secret.name].arn
   }]
 
-  actions_endpoints_secrets = [for index, secret in var.actions_endpoints_secrets : {
+  actions_endpoints_secrets = [for secret in var.actions_endpoints_secrets : {
     "name"      = secret.name,
-    "valueFrom" = aws_secretsmanager_secret.actions_endpoints_secrets[index].arn
+    "valueFrom" = aws_secretsmanager_secret.actions_endpoints_secrets[secret.name].arn
   }]
 
   ecs_container_definitions = concat([
